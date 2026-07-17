@@ -1,0 +1,32 @@
+[project]
+name = "few-label-node-classification-gnn"
+version = "0.1.0"
+description = "Benchmarking GNN backbones under few-label regimes on Planetoid datasets"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch",
+    "torch-geometric",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "tensorboard",
+    "hydra-core",
+    "hydra-joblib-launcher",
+    "omegaconf",
+]
+
+[dependency-groups]
+# Notebook-only deps. `uv sync` installs these by default; use `uv sync --no-dev`
+# on a training box to skip them.
+dev = [
+    "ipykernel",
+    "matplotlib",
+    "networkx",
+    "igraph",
+    "pycairo",
+]
+
+[tool.uv]
+package = false
