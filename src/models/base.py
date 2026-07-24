@@ -1,9 +1,4 @@
-"""Protocol every standard GNN backbone in `src/models/` must follow.
-
-The "standard" methods (`vanilla`, `iceberg`) call the model with
-`forward(x, edge_index) -> logits` and call `prepare(data)` once before
-training so backbones can do any one-shot precomputation (e.g. Diff's
-feature propagation) by returning a modified data object.
+"""Protocol for GNN backbones in `src/models/`.
 
 CG3 is intentionally outside this protocol — its method (`methods/cg3.py`)
 owns the model lifecycle directly because the architecture and loss are
@@ -27,7 +22,6 @@ class BaseGNN(nn.Module, abc.ABC):
         """One-shot pre-training hook. Default: identity.
 
         Override when the backbone needs to swap in precomputed inputs
-        (e.g. Diff replaces `data.x` with the propagated features so its
-        `forward(x, edge_index)` call site stays unchanged).
+        so its `forward(x, edge_index)` call site stays unchanged.
         """
         return data

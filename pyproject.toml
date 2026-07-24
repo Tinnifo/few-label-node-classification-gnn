@@ -15,6 +15,7 @@ dependencies = [
     "hydra-core",
     "hydra-joblib-launcher",
     "omegaconf",
+    "mlflow",
 ]
 
 [dependency-groups]

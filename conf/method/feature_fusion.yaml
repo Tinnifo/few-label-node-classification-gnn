@@ -1,0 +1,11 @@
+# Case study: standard feature fusion (structural + LLM).
+# Placeholder — training raises NotImplementedError until wired up.
+name: feature_fusion
+
+embedding_path: null
+fusion: concat                # concat | gated | attention (TBD)
+lr: 0.01
+epochs: 200
+weight_decay: 5e-4
+use_early_stopping: true
+patience: 50

@@ -2,7 +2,7 @@
 #
 # Sweep all four CG3 (local × global) combinations from snapshot/86b0818
 # (CG3Method/main.py): {gcn, gat} × {hgcn, hgat}, across the three Planetoid
-# datasets and the per-class budget grid used in `full_grid.yaml`.
+# datasets and the per-class budget grid {1,3,5,10,20}.
 #
 # Run with:
 #   python src/train.py --multirun +experiment=cg3_combinations

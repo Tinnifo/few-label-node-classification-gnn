@@ -1,0 +1,7 @@
+# Heterophilic text-attributed graph placeholder (e.g. Amazon-Ratings).
+# Loader raises NotImplementedError until a real source is wired in.
+name: amazon_ratings
+kind: placeholder
+homophily: false
+normalize_features: false
+percentage_budgets: [0.005, 0.01, 0.02, 0.03, 0.04]

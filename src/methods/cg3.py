@@ -53,9 +53,12 @@ class CG3Method(BaseMethod):
                 "graph hierarchy before constructing the model)."
             )
 
+        from src.losses import build_loss
         from src.methods._cg3.build_hierarchy import build_cg3_artifacts
         from src.methods._cg3.cg3_model import GNNModel
         from src.methods._cg3.hgcn import HGAT, HGCN
+
+        view_loss = build_loss(self.cfg)
 
         artifacts = build_cg3_artifacts(
             data,
@@ -99,6 +102,7 @@ class CG3Method(BaseMethod):
             local_model=self.local_model,
             dropout=self.dropout,
             num_features_nonzero=artifacts.num_features_nonzero,
+            view_loss=view_loss,
         )
         return model
 
@@ -143,6 +147,7 @@ class CG3Method(BaseMethod):
         loss_ce = getattr(model, "loss_ce", None)
         loss_gen = getattr(model, "loss_gen", None)
         loss_contrastive = getattr(model, "loss_contrastive", None)
+        loss_reg = getattr(model, "loss_reg", None)
         loss_total = getattr(model, "loss_total", loss)
 
         return {
@@ -152,6 +157,7 @@ class CG3Method(BaseMethod):
             "loss_ce": float(loss_ce.detach().item()) if loss_ce is not None else None,
             "loss_gen": float(loss_gen.detach().item()) if loss_gen is not None else None,
             "loss_contrastive": float(loss_contrastive.detach().item()) if loss_contrastive is not None else None,
+            "loss_reg": float(loss_reg.detach().item()) if loss_reg is not None else None,
             "loss_total": float(loss_total.detach().item()),
         }
 

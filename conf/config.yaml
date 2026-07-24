@@ -1,13 +1,15 @@
 # Top-level Hydra config. Defaults compose into one (model, method, dataset,
-# label_strategy) experiment. Override on the CLI:
-#   python src/train.py model=gat method=iceberg dataset=pubmed label_strategy.budget=10
+# label_strategy, loss, metrics) experiment. Override on the CLI:
+#   python src/train.py method=cg3 loss=structural_plus_hsic dataset=pubmed label_strategy.budget=10
 
 defaults:
   - _self_
-  - model: gcn
-  - method: vanilla
+  - model: cg3
+  - method: cg3
   - dataset: cora
   - label_strategy: per_class
+  - loss: structural
+  - metrics: default
 
 device: auto                  # auto | cpu | cuda
 data_root: data
@@ -18,7 +20,6 @@ master_csv: all_experiments.csv
 
 seeds: [0, 1, 2, 3, 4]
 
-
 epoch_log_every: 10
 
 save_checkpoints: true        # writes best_state_seed{seed}.pt next to the TB events
@@ -27,6 +28,12 @@ compile_model: false           # torch.compile(model) — JIT-fused forward, ~1.
 tensorboard:
   enable: true
   log_dir: runs               # one subdir per (dataset, budget, model, method)
+
+mlflow:
+  enable: true
+  # Local SQLite store (MLflow 3.x no longer accepts bare ./mlruns file stores).
+  tracking_uri: sqlite:///mlflow.db
+  experiment_name: few-label-gnn
 
 hydra:
   job:

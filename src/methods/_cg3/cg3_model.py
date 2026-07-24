@@ -21,6 +21,9 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
+from src.losses.base import BaseViewLoss
+from src.losses.structural import StructuralContrastiveLoss
+
 from .cg3_layers import MLP, GraphAttention, GraphConvolution
 
 
@@ -53,7 +56,8 @@ class GNNModel(nn.Module):
     def __init__(self, *, num_classes: int, hidden: int, input_dim: int,
                  global_model: nn.Module, train_idx, edge_pos,
                  mat01_tr_te, weight_decay: float,
-                 local_model: str, dropout: float, num_features_nonzero: int):
+                 local_model: str, dropout: float, num_features_nonzero: int,
+                 view_loss: BaseViewLoss | None = None):
         super().__init__()
 
         self.weight_decay = float(weight_decay)
@@ -62,6 +66,8 @@ class GNNModel(nn.Module):
         self.hidden1 = hidden
         self.global_model = global_model
         self.dropout = float(dropout)
+        # Pluggable structural / composite view loss (default = original CG3).
+        self.view_loss = view_loss if view_loss is not None else StructuralContrastiveLoss()
 
         if local_model == "gat":
             LocalLayer = GraphAttention
@@ -186,12 +192,20 @@ class GNNModel(nn.Module):
         ).clamp(min=1e-8)))
         self.p_e_xy = p_e_xy_1 + p_e_xy_2
 
-        # --- individual losses --- 
+        # --- individual losses ---
         loss_ce = loss_q_yobs_x_g
         loss_gen = self.p_e_xy
-        loss_contrastive = self._contrastive_loss()
-        
-        
+        loss_ctx = {
+            "train_idx": self.train_idx_buf,
+            "mat01_intra": self.mat01_intra,
+            "mat01_inter": self.mat01_inter,
+            "mat01_intra_rowsum": self.mat01_intra_rowsum,
+            "train_idx_size": self.train_idx_size,
+        }
+        loss_contrastive = self.view_loss(
+            self.concat_vec_local, self.concat_vec_global, loss_ctx,
+        )
+
         total = (
             loss_ce
             + 0.4 * loss_gen
@@ -210,56 +224,12 @@ class GNNModel(nn.Module):
 
         self.loss = total
         self.accuracy = masked_accuracy(self.outputs, labels, mask)
-        
+
         self.loss_ce = loss_ce.detach()
         self.loss_gen = loss_gen.detach()
         self.loss_contrastive = loss_contrastive.detach()
         self.loss_total = total.detach()
+        reg = self.view_loss.regularizer_value()
+        self.loss_reg = reg.detach() if reg is not None else None
 
         return self.outputs, self.loss, self.accuracy
-
-    def _contrastive_loss(self) -> torch.Tensor:
-        device = self.concat_vec_local.device
-        loss = torch.zeros((), device=device)
-
-        # Eq. 4 — pairwise unsupervised between local & global (and reverse).
-        cos_dist = torch.exp(torch.matmul(
-            self.concat_vec_local, self.concat_vec_global.t(),
-        ) / 0.5)
-        neg = torch.mean(cos_dist, dim=1)
-        diag_cos = torch.diagonal(cos_dist, 0)
-        pos_neg1 = diag_cos / (neg + 1e-8)
-
-        hp1 = 0.9
-
-        cos_dist = torch.exp(torch.matmul(
-            self.concat_vec_global, self.concat_vec_local.t(),
-        ) / 0.5)
-        neg = torch.mean(cos_dist, dim=1)
-        diag_cos = torch.diagonal(cos_dist, 0)
-        pos_neg2 = diag_cos / (neg + 1e-8)
-
-        pos_neg3 = torch.cat([pos_neg1, pos_neg2], dim=0)
-        loss = loss + (-hp1 * torch.mean(torch.log(pos_neg3.clamp(min=1e-8))))
-
-        # Supervised contrastive (round 1).
-        h1 = self.concat_vec_local.index_select(0, self.train_idx_buf)
-        h2 = self.concat_vec_global.index_select(0, self.train_idx_buf)
-        h_cos = torch.exp(torch.matmul(h1, h2.t()) / 0.5)
-        sup_pos = torch.sum(h_cos * self.mat01_intra, dim=1)
-        sup_neg = (torch.sum(h_cos * self.mat01_inter, dim=1) + sup_pos) / max(self.train_idx_size - 1, 1)
-        sup_pos = sup_pos / (self.mat01_intra_rowsum + 1e-8)
-        pos_neg_sup_1 = sup_pos / (sup_neg + 1e-8)
-
-        # Supervised contrastive (round 2, swapped).
-        h2_b = self.concat_vec_local.index_select(0, self.train_idx_buf)
-        h1_b = self.concat_vec_global.index_select(0, self.train_idx_buf)
-        h_cos = torch.exp(torch.matmul(h1_b, h2_b.t()) / 0.5)
-        sup_pos = torch.sum(h_cos * self.mat01_intra, dim=1)
-        sup_neg = (torch.sum(h_cos * self.mat01_inter, dim=1) + sup_pos) / max(self.train_idx_size - 1, 1)
-        sup_pos = sup_pos / (self.mat01_intra_rowsum + 1e-8)
-        pos_neg_sup_2 = sup_pos / (sup_neg + 1e-8)
-
-        pos_neg_sup_3 = torch.cat([pos_neg_sup_1, pos_neg_sup_2], dim=0)
-        loss = loss + (-hp1 * torch.mean(torch.log(pos_neg_sup_3.clamp(min=1e-8))))
-        return loss

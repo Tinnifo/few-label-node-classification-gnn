@@ -1,0 +1,5 @@
+# Placeholder metric pack — accuracy + macro F1.
+name: default
+metrics:
+  - accuracy
+  - macro_f1

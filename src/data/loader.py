@@ -3,11 +3,16 @@
 Wraps the helpers in `src/data/labels.py` (`set_few_label_mask`,
 `set_budget_percent`) so per-class N or percentage budgets are sampled from
 the original Planetoid train mask, with val/test masks left untouched.
+
+Dataset configs under `conf/dataset/` set `kind`:
+  - planetoid   → Cora / CiteSeer / PubMed via torch_geometric
+  - placeholder → heterophilic TAG stubs (raises until implemented)
 """
 
 from __future__ import annotations
 
 from dataclasses import dataclass
+from typing import Optional
 
 import torch_geometric.transforms as T
 from torch_geometric.datasets import Planetoid
@@ -23,7 +28,36 @@ class LoadedDataset:
     num_classes: int
 
 
-def load_dataset(name: str, root: str = "data", normalize_features: bool = False) -> LoadedDataset:
+def load_dataset(
+    name: str,
+    root: str = "data",
+    normalize_features: bool = False,
+    *,
+    kind: Optional[str] = None,
+) -> LoadedDataset:
+    """Load a graph dataset.
+
+    `kind` comes from the Hydra dataset config (`planetoid` | `placeholder`).
+    If omitted, Planetoid names are inferred for backward compatibility.
+    """
+    kind = (kind or _infer_kind(name)).lower()
+    if kind == "planetoid":
+        return _load_planetoid(name, root=root, normalize_features=normalize_features)
+    if kind == "placeholder":
+        raise NotImplementedError(
+            f"Dataset '{name}' is a heterophilic placeholder (kind=placeholder). "
+            "Wire a text-attributed heterophilic loader in src/data/loader.py."
+        )
+    raise ValueError(f"Unknown dataset kind '{kind}' for dataset '{name}'.")
+
+
+def _infer_kind(name: str) -> str:
+    if name.lower() in {"cora", "citeseer", "pubmed"}:
+        return "planetoid"
+    return "placeholder"
+
+
+def _load_planetoid(name: str, root: str, normalize_features: bool) -> LoadedDataset:
     transform = T.NormalizeFeatures() if normalize_features else None
     dataset = Planetoid(root=root, name=name, transform=transform)
     data = dataset[0]
@@ -36,9 +70,7 @@ def load_dataset(name: str, root: str = "data", normalize_features: bool = False
 
 
 def apply_label_strategy(data, strategy: str, budget, seed: int):
-    """Build the train mask using cs-26's helpers. `strategy` is `per_class`
-    (budget is N labels per class, int) or `percentage` (budget is fraction
-    of all nodes, float). Val/test masks are untouched."""
+    """Build the train mask. `strategy` is `per_class` or `percentage`."""
     set_seed(seed)
     if strategy == "per_class":
         return set_few_label_mask(data, int(budget), seed)
@@ -48,8 +80,6 @@ def apply_label_strategy(data, strategy: str, budget, seed: int):
 
 
 def format_budget(budget) -> str:
-    """Match the budget-string formatting from `src/run_experiments.py` so
-    W&B group / run names line up with the original cs-26 runs."""
     b = float(budget)
     if b >= 1:
         return f"{int(b)}"
