@@ -7,23 +7,3 @@ For LLM-based labeling methods, I am not sure they need to be included as a main
 You two can discuss the specific method design first and then start the experiments based on direction 2. If there are any concrete ideas or design choices you would like to discuss before next Wednesday, please let me know.
  
 
-
-# What to do for meeting
-
-
-## Methods
-
-### Competing methods
-- how to implement competing methods 
-
-
-### CG3 + LLM semantiv view (direction 2 from related works)
-
-
-## Evaluation / Benchmark results
-
-### Metrics
-
-### Datasets
-
-
