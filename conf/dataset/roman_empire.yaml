@@ -1,8 +1,0 @@
-# Heterophilic text-attributed graph placeholder (e.g. Roman-Empire from
-# Platonov et al.). Loader raises NotImplementedError until a real source
-# is wired in src/data/loader.py.
-name: roman_empire
-kind: placeholder
-homophily: false
-normalize_features: false
-percentage_budgets: [0.005, 0.01, 0.02, 0.03, 0.04]
