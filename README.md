@@ -5,7 +5,7 @@ Hydra-driven pipeline for few-label node classification with the `cg3` method
 scaffolding for Direction-2 (LLM semantic view + disparity/HSIC) and local
 MLflow tracking. Metrics: accuracy and macro F1.
 
-See [PLAN.md](PLAN.md) for the Direction-2 experiment design.
+See [PLAN.md](03_repo/few-label-node-classification-gnn/PLAN.md) for the Direction-2 experiment design.
 
 ## 1. Setup
 
