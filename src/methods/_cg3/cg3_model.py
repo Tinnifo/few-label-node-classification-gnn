@@ -26,6 +26,7 @@ from src.losses.structural import StructuralContrastiveLoss
 
 from .cg3_layers import MLP, GraphAttention, GraphConvolution
 
+from .semantic_channel import SemanticChannel
 
 def masked_softmax_cross_entropy(preds: torch.Tensor, labels: torch.Tensor,
                                  mask: torch.Tensor) -> torch.Tensor:
@@ -176,6 +177,7 @@ class GNNModel(nn.Module):
         self.outputs = F.normalize(
             0.6 * self.concat_vec_local + 0.4 * self.concat_vec_global, p=2, dim=1,
         )
+        
 
         loss_q_yobs_x_g = masked_softmax_cross_entropy(self.outputs, labels, mask)
 
@@ -205,6 +207,8 @@ class GNNModel(nn.Module):
         loss_contrastive = self.view_loss(
             self.concat_vec_local, self.concat_vec_global, loss_ctx,
         )
+        
+        # hsic_loss comes here
 
         total = (
             loss_ce
