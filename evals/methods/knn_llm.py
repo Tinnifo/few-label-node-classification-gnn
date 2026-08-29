@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from src.methods.placeholder import PlaceholderMethod
+from evals.methods.placeholder import PlaceholderMethod
 
 
 class KNNLLMMethod(PlaceholderMethod):

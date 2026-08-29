@@ -1,0 +1,19 @@
+[project]
+name = "few-label-node-classification-gnn"
+version = "0.1.0"
+description = "CG3 plus a semantic view for few-label node classification"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "torch",
+    "torch-geometric",
+    "numpy",
+    "pandas",
+    "scikit-learn",
+    "scipy",
+    "mlflow",
+    "transformers",
+]
+
+[tool.uv]
+package = false

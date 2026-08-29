@@ -1,13 +1,7 @@
 """Protocol every training method follows.
 
-A method bundles: how to build the model, how to (optionally) preprocess the
-data once before training, what one training step does, and how to compute
-the final test-set metrics. The Hydra entry (`src/train.py`) treats every
-method behind this same surface, so adding a new method = drop a file in
-`src/methods/` and a YAML in `conf/method/`.
-
-`cg3` is a coupled architecture+training recipe so it ignores `cfg.model`
-and builds its own model in `build_model`.
+`main.py` treats every method behind this surface. `cg3` ignores `cfg.model`
+and builds its own architecture in `build_model`.
 """
 
 from __future__ import annotations
@@ -17,7 +11,7 @@ from typing import Any, Dict, Optional
 
 import torch
 
-from src.eval.metrics import compute_metrics
+from evals.metrics import compute_metrics
 
 
 class BaseMethod(abc.ABC):
@@ -29,9 +23,6 @@ class BaseMethod(abc.ABC):
         """Build and return the trainable model."""
 
     def prepare(self, model: torch.nn.Module, data) -> Any:
-        """One-shot pre-training preprocessing. Default: delegate to the model
-        if it has a `prepare` hook. Override for method-level preprocessing
-        (e.g. CG3's hierarchy build)."""
         if hasattr(model, "prepare"):
             return model.prepare(data)
         return data
@@ -46,19 +37,15 @@ class BaseMethod(abc.ABC):
     @abc.abstractmethod
     def train_step(self, model: torch.nn.Module, data, optimizer: torch.optim.Optimizer,
                    epoch: int) -> Dict[str, float]:
-        """One training step. Returns a dict of scalars to log
-        (e.g. {'train_loss': ..., 'train_acc': ...}). Must call backward+step."""
+        """One training step. Must call backward+step. Returns scalars to log."""
 
     def predict_logits(self, model: torch.nn.Module, data) -> torch.Tensor:
-        """Forward pass returning class logits. Override if the model's
-        forward returns more than logits (e.g. CG3 returns a 3-tuple)."""
         model.eval()
         with torch.no_grad():
             return model(data.x, data.edge_index)
 
     def evaluate(self, model: torch.nn.Module, data,
                  mask: Optional[torch.Tensor] = None) -> Dict[str, float]:
-        """Return metric dict (accuracy, macro_f1) on the given mask."""
         if mask is None:
             mask = data.test_mask
         logits = self.predict_logits(model, data)
@@ -68,8 +55,6 @@ class BaseMethod(abc.ABC):
         return compute_metrics(y_true, y_pred)
 
     def validate(self, model: torch.nn.Module, data) -> Dict[str, float]:
-        """Per-epoch validation snapshot used for early stopping / logging.
-        Default: train_acc + val_acc/val_loss on the standard val_mask."""
         import torch.nn.functional as F
         model.eval()
         with torch.no_grad():

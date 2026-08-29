@@ -1,16 +1,4 @@
-"""HGCN and HGAT global-view models for CG3.
-
-Faithful port of the snapshot/86b0818 `CG3Method/models.py`. The TF-style
-`placeholders` dict and the global `FLAGS` config are replaced by explicit
-constructor kwargs (`input_dim`, `output_dim`, `hidden`, `coarsen_level`,
-`max_node_wgt`, `node_wgt_embed_dim`, `weight_decay`, `channel_num`,
-`dropout`).
-
-The standalone `_accuracy` method is dropped — accuracy is computed by the
-outer GNNModel against the integer `y` tensor that the Hydra pipeline owns.
-The `_loss()` weight-decay term is preserved because GNNModel adds the
-global model's `.loss` onto its total.
-"""
+"""HGCN and HGAT global-view models for CG3 (snapshot/86b0818)."""
 
 from __future__ import annotations
 
@@ -21,12 +9,10 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from .hgcn_layers import HGCNGraphAttention, HGCNGraphConvolution
+from utils.graph import HGCNGraphAttention, HGCNGraphConvolution
 
 
 class _HierarchicalModel(nn.Module):
-    """Common base for HGCN / HGAT — owns the per-level node-weight embedding
-    table and the residual-skip schedule between encoder and decoder."""
 
     def __init__(self, input_dim: int, output_dim: int, hidden: int,
                  transfer_list, adj_list, node_wgt_list,
@@ -114,7 +100,6 @@ class _HierarchicalModel(nn.Module):
                 act=hidden_act,
             ))
 
-        # Output layer (identity activation; the local view applies softmax/CE)
         self.layers.append(self._make_layer(
             input_dim=H[self.coarsen_level * 2 - 1],
             output_dim=self.output_dim,

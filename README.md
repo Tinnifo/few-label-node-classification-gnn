@@ -1,21 +1,26 @@
-DATA 
-- AG
-- TAG
+DATA
+- AG  (stub: `from data import load_ag`)
+- TAG (stub: `from data import load_tag`)
 
-
-MODELS
+MODELS  (`from src.model import GCN, HGCN, HGAT`)
 - GCN
+- HGCN / HGAT (CG3 global view)
 
-METHOD
-- adapted cg3 script
+METHOD  (`from src.method import SemanticGNNModel`)
+- adapted CG3 + semantic view
 
-SH
+UTILS
+- `utils/graph.py`  original CG3
+- `utils/losses.py` view losses
+- `utils/transformers.py` semantic channel
+- `utils/mlflow_logger.py`
+
+SH  (`import sh`)
+- `sh/run_cg3.sh`
 
 main.py
 - data load + label strategy
-- train model 
+- train model
 - inference
 - eval
-- plot mlflow 
-
-
+- plot / log mlflow

@@ -1,7 +1,4 @@
-"""Placeholder methods that raise until implemented.
-
-Shared base so each stub only needs a short docstring describing intent.
-"""
+"""Placeholder methods that raise until implemented."""
 
 from __future__ import annotations
 
@@ -9,7 +6,7 @@ from typing import Dict
 
 import torch
 
-from src.methods.base import BaseMethod
+from evals.methods.base import BaseMethod
 
 
 class PlaceholderMethod(BaseMethod):

@@ -1,12 +1,6 @@
 """Dataset loading + label-strategy dispatch.
 
-Wraps the helpers in `src/data/labels.py` (`set_few_label_mask`,
-`set_budget_percent`) so per-class N or percentage budgets are sampled from
-the original Planetoid train mask, with val/test masks left untouched.
-
-Dataset configs under `conf/dataset/` set `kind`:
-  - planetoid   → Cora / CiteSeer / PubMed via torch_geometric
-  - placeholder → heterophilic TAG stubs (raises until implemented)
+`kind` is `planetoid` (Cora / CiteSeer / PubMed) or `placeholder` (TAG stubs).
 """
 
 from __future__ import annotations
@@ -17,7 +11,7 @@ from typing import Optional
 import torch_geometric.transforms as T
 from torch_geometric.datasets import Planetoid
 
-from src.data.labels import set_budget_percent, set_few_label_mask, set_seed
+from evals.labels import set_budget_percent, set_few_label_mask, set_seed
 
 
 @dataclass
@@ -37,8 +31,8 @@ def load_dataset(
 ) -> LoadedDataset:
     """Load a graph dataset.
 
-    `kind` comes from the Hydra dataset config (`planetoid` | `placeholder`).
-    If omitted, Planetoid names are inferred for backward compatibility.
+    `kind` is `planetoid` or `placeholder`. If omitted, Planetoid names are
+    inferred for backward compatibility.
     """
     kind = (kind or _infer_kind(name)).lower()
     if kind == "planetoid":
@@ -46,7 +40,7 @@ def load_dataset(
     if kind == "placeholder":
         raise NotImplementedError(
             f"Dataset '{name}' is a heterophilic placeholder (kind=placeholder). "
-            "Wire a text-attributed heterophilic loader in src/data/loader.py."
+            "Wire a text-attributed heterophilic loader in evals/loader.py or data/."
         )
     raise ValueError(f"Unknown dataset kind '{kind}' for dataset '{name}'.")
 

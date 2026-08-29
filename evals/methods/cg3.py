@@ -1,22 +1,7 @@
-"""CG3 method — faithful port of the snapshot/86b0818 CG3 pipeline.
+"""CG3 method — local GCN/GAT + global HGCN/HGAT, snapshot/86b0818 pipeline.
 
-Architecture and loss are coupled, so this method ignores `cfg.model` and
-builds its own composite model:
-  * a local-view `GraphConvolution` / `GraphAttention` two-layer classifier
-    (selectable via `cfg.method.local_model = "gcn" | "gat"`).
-  * a global-view hierarchical `HGCN` / `HGAT` (selectable via
-    `cfg.method.global_model = "hgcn" | "hgat"`).
-The four (local × global) combinations are the four experiments shown in
-the snapshot's `CG3Method/main.py`.
-
-`prepare` runs the graph-coarsening and supervised-contrastive bookkeeping
-once at the start of training and stashes the per-data tensors on `data`
-under `_cg3_*` attributes. Each forward call passes `(features, support,
-labels, mask)` to the model, which returns `(outputs, loss, accuracy)` —
-matching the snapshot's `forward` contract exactly.
-
-The model adds an L2 weight-decay term inside its own loss, so the
-optimizer is constructed with `weight_decay=0` to avoid double-counting.
+`prepare` stashes coarsening tensors on `data._cg3_*`. The model owns L2, so
+the optimizer is built with `weight_decay=0`.
 """
 
 from __future__ import annotations
@@ -26,7 +11,7 @@ from typing import Any, Dict
 import torch
 import torch.nn.functional as F
 
-from src.methods.base import BaseMethod
+from evals.methods.base import BaseMethod
 
 
 
@@ -53,10 +38,9 @@ class CG3Method(BaseMethod):
                 "graph hierarchy before constructing the model)."
             )
 
-        from src.losses import build_loss
-        from src.methods._cg3.build_hierarchy import build_cg3_artifacts
-        from src.methods._cg3.cg3_model import GNNModel
-        from src.methods._cg3.hgcn import HGAT, HGCN
+        from src.model.hgcn import HGAT, HGCN
+        from utils.graph import GNNModel, build_cg3_artifacts
+        from utils.losses import build_loss
 
         view_loss = build_loss(self.cfg)
 
@@ -107,8 +91,7 @@ class CG3Method(BaseMethod):
         return model
 
     def prepare(self, model: torch.nn.Module, data):
-        """Move CPU artifacts onto the data's device and stash them on
-        `data._cg3_*`. Called once after `build_model().to(device)`."""
+        """Move coarsening tensors onto `data._cg3_*` after `.to(device)`."""
         device = data.x.device
         a = self._artifacts
         if a is None:
@@ -125,7 +108,6 @@ class CG3Method(BaseMethod):
         return data
 
     def build_optimizer(self, model: torch.nn.Module) -> torch.optim.Optimizer:
-        # Snapshot adds the L2 term inside its own loss — avoid double-counting.
         return torch.optim.Adam(model.parameters(), lr=self.lr, weight_decay=0.0)
 
     def train_step(self, model: torch.nn.Module, data,
@@ -141,7 +123,6 @@ class CG3Method(BaseMethod):
         loss.backward()
         optimizer.step()
 
-        # --- detach everything once (clean logging) ---
         train_loss = loss.detach()
 
         loss_ce = getattr(model, "loss_ce", None)
