@@ -1,0 +1,75 @@
+# Preregistered hypotheses — semantic-view encoder ablation
+
+**Rules of the game.** This file is FROZEN the moment the first job is
+submitted: results get appended to §4, predictions in §2–§3 are never edited.
+A prediction that turns out wrong is a result, not a mistake — the only way to
+ruin this document is to change it after seeing data.
+
+Priors marked `(single-seed)` come from July's one-seed probes: trust their
+*direction and ordering*, let the 10-seed paired CIs decide magnitude.
+
+## 1. The yardstick (decided before any run)
+
+- Every arm runs the **same seeds** `0–9`. Same seed = same label draw, so arm
+  differences are **paired per seed**: compute Δ_s = acc_arm(s) − acc_ref(s)
+  for each seed s, then mean(Δ) with its 95% CI = mean ± 1.96·sd(Δ)/√10.
+- An effect is **real** if the paired CI excludes zero.
+- An effect is **interesting** if |mean(Δ)| ≥ **0.5 pts** accuracy
+  (minimum effect of interest — edit before freezing if you disagree).
+- Primary metric: test accuracy. Secondary: macro-F1 (report both; if they
+  disagree, say so rather than picking the better one).
+- Protocol constants (identical on every arm, from `conf/`): early stopping
+  on, patience 200, budget 20/class, `hsic.sigma`/`hsic.max_samples` fixed.
+
+## 2. Validity checks — failure means DEBUG, not conclude
+
+| # | check | pass condition | on failure |
+| --- | --- | --- | --- |
+| V1 | A0 is CG3 | A0 reproduces the faithful-port CG3 numbers **seed-for-seed** | stop; nothing downstream is interpretable |
+| V2 | gate stability | `fused_by_concat` constant within a run after warm-up; same path across seeds of one arm | freeze/adjust `hsic.sigma`, report flip rate; do not interpret accuracy |
+| V3 | stripper sanity | eyeball 20 Granite descriptors vs stripped versions: no label declarations survive, no explanation body destroyed | fix regexes before trusting A3/A4 |
+| V4 | budget honesty | every run logs exactly 20 labels/class (the guard refuses more) | the guard has a bug |
+
+## 3. Science hypotheses
+
+Reference arm for Δ is named per row. Arms: A0 = `semantic=none`,
+A1 = `sbert`, A2 = `e5`, A2′ = `gpt3l`, A3 = `tape`, A4 = `tape_leak`.
+
+| # | claim | prediction (prior) | falsified if | action per outcome |
+| --- | --- | --- | --- | --- |
+| H1 | Encoder capacity is the dominant axis | Δ(A2′−A0) > Δ(A1−A0) > 0; priors: +0.067 and +0.017 on cora `(single-seed)` | ordering flips, or both CIs include 0 | holds → capacity is the headline; both null → semantic view doesn't help CG3 at few labels, fusion diagnostics become the story |
+| H1b | The open mid-size encoder sits between | Δ(A1−A0) ≤ Δ(A2−A0) ≤ Δ(A2′−A0) | A2 outside the bracket | either way, feeds the width-confound discussion (384 vs 1024 vs 3072 d) |
+| H2 | Stripped explanations add nothing over own text | Δ(A3−A1) ≈ 0; prior +0.005 `(single-seed)` | CI excludes 0 AND ≥ 0.5 pts | holds → explanation view stays secondary; violated → Granite-TAPE prompt differs from the LLMNodeBed dumps — inspect descriptors before believing it |
+| H3 | Label leakage inflates the unstripped arm | Δ(A4−A3) ≈ +0.010 to +0.015; prior +0.0136 `(single-seed)` | A4 ≈ A3 (CI includes 0) | holds → stripper validated, A4 is the cautionary row; null → check whether Granite declares labels at all (V3), or the stripper over-strips |
+| H4 | Datasets do not agree in magnitude | pubmed Δs smaller than cora Δs (denser text already in BoW features; neighbor-structure evidence from Chen Obs. 15–16 suggests dataset-dependence) | pubmed ≥ cora | either way: report per-dataset, never pooled |
+
+**citeseer_tag:** within-arm comparisons only — its absolute numbers are not
+comparable to any published CiteSeer result (3,186-node TAG-native graph).
+Predictions H1–H3 apply directionally; no magnitude priors exist.
+
+## 4. Results (append after runs — never edit above this line)
+
+For each dataset × arm: MLflow run name, commit SHA, mean acc ± std,
+and for each H: predicted vs observed, paired CI, verdict —
+**confirmed / refuted / underpowered** (CI includes both 0 and the MEI —
+i.e. the data cannot distinguish "no effect" from "interesting effect").
+
+| dataset | comparison | predicted | observed mean Δ [95% CI] | verdict |
+| --- | --- | --- | --- | --- |
+| | | | | |
+
+## 5. Review protocol (the part where the learning happens)
+
+After results land, answer in writing, in this order:
+
+1. Did every validity check pass? If not, stop — fix, rerun, only then read on.
+2. For each H: verdict. For every *refuted* row: was the prior wrong, or the
+   setup different from the prior's setup? (E3 priors came from one seed and a
+   different fusion path — "refuted" may mean "the prior didn't transfer".)
+3. What surprised you? (If nothing surprised you, the predictions were too
+   safe — next preregistration, tighten the ranges.)
+4. What is the single next experiment this result licenses — and what would
+   its H-table look like?
+
+The skill being practiced: **write the number down before you see it.** The
+predictions above are deliberately concrete enough to be wrong.
