@@ -1,0 +1,11 @@
+# A0 control: plain CG3 (fusion bypassed, no semantic parameters)
+enabled: false
+descriptor: none
+encoder: sentence-transformers/all-MiniLM-L6-v2
+embeddings: null
+keep_label_leak: false
+dim: 128
+hidden: 256
+descriptor_model: ibm-granite/granite-4.2-3b
+descriptor_max_tokens: 256
+class_names: null           # null = the dataset's published names

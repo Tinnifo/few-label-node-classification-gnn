@@ -1,0 +1,12 @@
+# A2': text-embedding-3-large (3072d), precomputed (API-only encoder).
+# Path resolves per dataset; row count is validated against the graph.
+enabled: true
+descriptor: none
+encoder: sentence-transformers/all-MiniLM-L6-v2   # unused on this arm
+embeddings: datasets/tag/${dataset.bundle_dir}/${dataset.bundle_dir}_sem_gpt3l.npy
+keep_label_leak: false
+dim: 128
+hidden: 256
+descriptor_model: ibm-granite/granite-4.2-3b
+descriptor_max_tokens: 256
+class_names: null

@@ -1,0 +1,4 @@
+name: pubmed
+bundle_dir: pubmed
+data_root: data
+texts: datasets/tag/pubmed/pubmed_texts.txt

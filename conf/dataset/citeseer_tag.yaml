@@ -1,0 +1,7 @@
+# The TAG release AS the graph (3,186 nodes; bundled Planetoid-style split).
+# Numbers are NOT comparable to published Planetoid-CiteSeer results —
+# within-experiment arm comparisons only.
+name: citeseer_tag
+bundle_dir: citeseer
+data_root: datasets
+texts: datasets/tag/citeseer/citeseer_tag_texts.txt

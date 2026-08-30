@@ -1,0 +1,50 @@
+# Experiment protocol. One arm = one `semantic=` option; sweep with -m.
+# NOTE: training defaults here are the PROTOCOL (early stopping on, patience 200,
+# identical on every arm — the stopping-rule confound is ~600x the seed noise),
+# deliberately different from the argparse debug defaults in src/cg3_semantic.py.
+defaults:
+  - dataset: cora
+  - semantic: none
+  - _self_
+
+label_strategy: per_class   # per_class | percentage
+budget: 20                  # labels per class (>20 refuses: public pool is 20/class)
+seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+
+structure:
+  local_model: gcn          # gcn | gat
+  global_model: hgcn        # hgcn | hgat
+  hidden_local: 1024
+  hidden_global: 32
+  coarsen_level: 4
+  max_node_wgt: 50
+  channel_num: 4
+  node_wgt_embed_dim: 5
+  temperature: 0.5
+  hp1: 0.9
+
+hsic:                       # gate + loss term; arm-invariant protocol constants
+  threshold: 0.1
+  sigma: 1.0
+  weight: 0.1
+  max_samples: 1024
+
+training:
+  epochs: 200
+  lr: 0.01
+  weight_decay: 5.0e-4
+  dropout: 0.6
+  early_stopping: true
+  patience: 200             # measured convergence: best epochs 21-167; 50 truncates
+  device: auto              # auto | cpu | cuda
+
+output:
+  dir: null                 # directory for best checkpoints, null = don't save
+  epoch_log_every: 10
+  mlflow: true
+  mlflow_uri: sqlite:///mlflow.db
+  mlflow_experiment: few-label-gnn
+
+hydra:
+  job:
+    chdir: false            # keep relative data/ and mlflow paths stable across runs

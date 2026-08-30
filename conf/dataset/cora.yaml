@@ -1,0 +1,4 @@
+name: cora
+bundle_dir: cora            # datasets/tag/<bundle_dir>/ (release data-v1)
+data_root: data
+texts: datasets/tag/cora/cora_texts.txt

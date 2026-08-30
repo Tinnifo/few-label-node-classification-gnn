@@ -1,0 +1,6 @@
+# Planetoid CiteSeer: STRUCTURAL ARMS ONLY — its text release (3,186 nodes)
+# cannot line up with this 3,327-node graph. Semantic arms: dataset=citeseer_tag.
+name: citeseer
+bundle_dir: citeseer
+data_root: data
+texts: null

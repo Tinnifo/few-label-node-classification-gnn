@@ -1,0 +1,12 @@
+# A3: TAPE-style LLM prediction+explanation (He et al. 2024), leak-STRIPPED.
+# LLM backbone fixed, not ablated (TAPE Table 4 robustness).
+enabled: true
+descriptor: tape
+encoder: sentence-transformers/all-MiniLM-L6-v2
+embeddings: null
+keep_label_leak: false
+dim: 128
+hidden: 256
+descriptor_model: ibm-granite/granite-4.2-3b
+descriptor_max_tokens: 256
+class_names: null

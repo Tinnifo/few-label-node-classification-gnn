@@ -50,6 +50,20 @@ Grounds: encoder capacity was the dominant axis in the July probe (gpt3l
 top). A3 is the descriptor-ablation analogue of TAPE's "explanation vs
 original text" comparison, run at our label budgets.
 
+**Run matrix (Hydra).** `main.py` + `conf/` is the experiment interface; each
+arm is a `semantic=` config-group option, each dataset a `dataset=` option:
+
+```
+python main.py dataset=cora semantic=none                                        # A0
+python main.py -m dataset=cora,pubmed,citeseer_tag semantic=none,sbert,e5,gpt3l  # A0–A2'
+python main.py -m dataset=cora,pubmed,citeseer_tag semantic=tape,tape_leak       # A3+A4
+```
+
+`conf/training` encodes the protocol (early stopping ON, patience 200,
+identical on every arm); the argparse CLI in `src/cg3_semantic.py` keeps debug
+defaults (early stopping off, patience 50) and is for one-off debugging only —
+experiments go through `main.py`.
+
 **Fixed, not ablated** — with the citation that licenses fixing it:
 
 - **Descriptor LLM = Granite-4.2-3b.** TAPE Table 4 (GPT-3.5 ↔ Llama2-13b)

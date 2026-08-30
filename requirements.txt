@@ -5,3 +5,4 @@ scipy
 scikit-learn
 mlflow
 transformers
+hydra-core>=1.3
