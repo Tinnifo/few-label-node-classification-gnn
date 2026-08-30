@@ -377,11 +377,11 @@ def run_seed(args, data, hierarchy: Hierarchy, semantic_view: torch.Tensor | Non
     for epoch in range(1, args.epochs + 1):
         model.train()
         optimizer.zero_grad()
-        _, loss, terms = model(inputs, inputs.y_train_oh, inputs.train_mask, tags)
+        _, loss, terms = model(inputs, inputs.y_train_oh, inputs.train_mask, tags=None)
         loss.backward()
         optimizer.step()
 
-        pred, outputs = predict(model, inputs, tags)
+        pred, outputs = predict(model, inputs, tags=None)
         val_acc = (pred[inputs.val_mask] == inputs.y[inputs.val_mask]).float().mean().item()
         val_loss = F.cross_entropy(outputs[inputs.val_mask], inputs.y[inputs.val_mask]).item()
         epoch_log.append({"epoch": epoch, **terms, "val_acc": val_acc, "val_loss": val_loss})
@@ -395,7 +395,7 @@ def run_seed(args, data, hierarchy: Hierarchy, semantic_view: torch.Tensor | Non
                 break
 
     model.load_state_dict(best_state, strict=False)
-    pred, _ = predict(model, inputs, tags)
+    pred, _ = predict(model, inputs, tags=None)
     metrics = compute_metrics(inputs.y[inputs.test_mask].cpu().numpy(), pred[inputs.test_mask].cpu().numpy())
     return {
         "metrics": metrics,
