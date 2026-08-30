@@ -33,15 +33,16 @@ the loss with `--hsic-weight`.
 **Question.** Does the semantic view help CG3 at few labels, and how much of
 the answer is encoder (and descriptor) capacity?
 
-**Arms** (per dataset × budget, ≥10 seeds):
+**Arms** (per dataset × budget, ≥10 seeds) — flags as implemented on this branch:
 
 | arm | flags | view |
 | --- | --- | --- |
-| A0 control | *(no `--semantic`)* | none — **must equal faithful CG3; see gap 1** |
-| A1 | `--semantic --texts …` (defaults) | Granite descriptor → MiniLM-L6-v2 (384d) |
-| A2 | A1 + `--encoder-model intfloat/e5-large-v2` | stronger open encoder (1024d) |
-| A2′ | precomputed `gpt3l` view (needs gap 3) | text-embedding-3-large (3072d), API-only |
-| A3 | raw text, descriptor skipped (needs gap 3 or a `--no-descriptor` switch) | isolates what the LLM descriptor adds over the node's own text |
+| A0 control | *(no `--semantic`)* | none — bit-equal to faithful CG3 (fusion bypassed, no semantic parameters) |
+| A1 primary | `--semantic --texts datasets/tag/<ds>/<ds>_texts.txt` | own text → MiniLM-L6-v2 (384d); `--descriptor none` is the default |
+| A2 | A1 + `--encoder-model intfloat/e5-large-v2` | stronger open encoder (1024d; `query:` prefix applied automatically) |
+| A2′ | `--semantic --semantic-embeddings datasets/tag/<ds>/<ds>_sem_gpt3l.npy` | text-embedding-3-large (3072d), precomputed |
+| A3 | A1 + `--descriptor tape` | TAPE-style LLM prediction+explanation, label-leak stripped |
+| A4 leak control | A3 + `--keep-label-leak` | unstripped explanations — measures how much "gain" is leakage |
 
 Grounds: encoder capacity was the dominant axis in the July probe (gpt3l
 +0.067 vs sbert +0.017 vs explanation view +0.005) and in Chen et al.
@@ -70,40 +71,46 @@ declarations before encoding (the July measurement: an unstripped
 "Answer: …" line accounts for most of an apparent explanation-view gain;
 prefix-matching alone catches only ~60–70% — strip structurally).
 
-## 3. Gaps to close, in order
+## 3. Closed on this branch
 
-1. **The A0 control is not CG3 yet.** With `--semantic` off, `forward` still
-   builds `z_semantic = zeros`, runs it through `classifier_semantic` (a
-   trainable bias), and **entropy-mixes that constant branch into the
-   outputs** — the control trains a learned class-prior branch faithful CG3
-   does not have. Fix: when the semantic view is off, `outputs =
-   logits_structural`, and exclude `classifier_semantic`/`classifier_fused`
-   from the optimizer. Acceptance check: reproduce the faithful-port CG3
-   numbers seed-for-seed.
-2. **Texts must be in PyG order.** `load_texts` wants one line per node in
-   PyG order. `scripts/make_texts.py` (this branch) writes that file from the
-   TAG bundles; cora/pubmed bundles are already Planetoid-aligned (edge sets
-   match PyG exactly: 5,278 / 44,324 undirected). **CiteSeer cannot pass this
-   path**: the TAG release has 3,186 nodes vs PyG's 3,327 — `load_texts`
-   will (correctly) refuse. Decide: skip citeseer in semantic arms, or add a
-   TAG-native graph path later.
-3. **Precomputed-view bypass.** Add `--semantic-embeddings <npy>` skipping
-   descriptor+encoder: needed for A2′ (gpt3l is API-only, no HF checkpoint),
-   for A3-style controls, and to freeze a view once and reuse it across
-   seeds/arms (Granite over 19,717 pubmed nodes per run is hours of GPU that
-   re-randomizes nothing).
-4. **Budget cap.** `set_few_label_mask` samples only from the public
-   Planetoid `train_mask` (20/class) — a `--budget 40` silently returns 20.
-   Guard: after sampling, assert the achieved count equals the request, or
-   sample beyond the public mask.
-5. **Fusion diagnostics.** The HSIC gate flips discretely at
-   `--hsic-threshold` (HSIC is not scale-invariant — Gretton et al. 2005 —
-   so the threshold is coupled to `--hsic-sigma` and embedding dim; both views
-   are L2-normalized first, which helps). Log `fused_by_concat` per epoch and
-   report gate flips. Entropy attention weights **confidence, not
-   correctness** (July probe: it loses 26 pts when confidence anti-correlates
-   with accuracy; per-branch temperature scaling on validation recovers it) —
-   keep the per-view logits in MLflow so this is checkable.
+1. **A0 control bypass** — with the view off, `outputs = logits_structural`;
+   the semantic heads are not even constructed, so the control has zero extra
+   parameters (previously a trainable bias branch was entropy-mixed into every
+   output, i.e. a learned class prior CG3 does not have).
+2. **Texts adapter** — `scripts/make_texts.py` writes one-line-per-node files
+   in PyG order from the TAG bundles (cora/pubmed are Planetoid-aligned; edge
+   sets match PyG exactly: 5,278 / 44,324 undirected).
+3. **Precomputed-view bypass** — `--semantic-embeddings <npy>` skips
+   descriptor+encoder (row count validated against the graph).
+4. **Descriptor/embedding caching** — the frozen LLM+encoder pass now runs
+   once per run, not once per epoch and validation call (it previously
+   re-sampled descriptors every forward: hours of inference per run and a
+   semantic view that changed under the model). Decoding is greedy, so the
+   explanation features are reproducible.
+5. **TAPE-format prompt + structural leak stripper** — `--descriptor tape`
+   uses the closed-category prediction+explanation prompt;
+   `strip_label_declarations` removes leading declaration blocks, bare class
+   lists, and per-class headers (prefix-only stripping catches ~60–70%);
+   `--keep-label-leak` preserves them for the A4 control.
+6. **Budget guard** — an unsatisfiable `--budget` now refuses loudly instead
+   of silently capping at the public pool's 20/class.
+7. **Fusion diagnostics** — `alpha_semantic_mean` and per-view entropies land
+   in MLflow next to `fused_by_concat` and `loss_hsic`.
+
+## 3b. Still open
+
+- **CiteSeer**: the TAG release is 3,186 nodes vs PyG's 3,327 —
+  `make_texts.py` refuses it for the Planetoid path. Decide: skip citeseer in
+  semantic arms, or add a TAG-native graph path.
+- **Acceptance run**: A0 must reproduce the faithful-port CG3 numbers
+  seed-for-seed on the cluster before any arm comparison is trusted.
+- **HSIC gate behavior**: the gate flips discretely at `--hsic-threshold`
+  (HSIC is not scale-invariant — Gretton et al. 2005 — so the threshold is
+  coupled to `--hsic-sigma` and embedding dim; both views are L2-normalized
+  first, which helps). Watch `fused_by_concat` across epochs. Entropy
+  attention weights **confidence, not correctness** (July probe: −26 pts when
+  confidence anti-correlates with accuracy; per-branch temperature scaling on
+  validation recovers it) — the new diagnostics make this checkable.
 
 ## 4. Data
 

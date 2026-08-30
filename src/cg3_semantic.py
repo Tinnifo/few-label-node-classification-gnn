@@ -42,6 +42,15 @@ from src.preprocess import CG3Inputs, Hierarchy, build_hierarchy, build_inputs  
 log = logging.getLogger("cg3_semantic")
 
 PLANETOID = {"cora": "Cora", "citeseer": "CiteSeer", "pubmed": "PubMed"}
+# Published class names (label_texts of the TAG releases; Chen et al. 2024) —
+# used in the TAPE-style prompt and by the label-leak stripper.
+PLANETOID_CLASSES = {
+    "cora": ["Case Based", "Genetic Algorithms", "Neural Networks", "Probabilistic Methods",
+             "Reinforcement Learning", "Rule Learning", "Theory"],
+    "citeseer": ["Agents", "Artificial Intelligence", "Databases", "Information Retrieval",
+                 "Machine Learning", "Human-Computer Interaction"],
+    "pubmed": ["Diabetes Mellitus Experimental", "Diabetes Mellitus Type 1", "Diabetes Mellitus Type 2"],
+}
 LOCAL_WEIGHT, GLOBAL_WEIGHT = 0.6, 0.4  # CG3's fixed mix of the local and global views
 GENERATIVE_WEIGHT = 0.4  # CG3's weight on the edge-reconstruction loss
 
@@ -114,8 +123,15 @@ class CG3SemanticModel(nn.Module):
         self.edge_decoder = MLP(2 * num_classes, 1, act=identity, bias=True)
 
         self.classifier_struct = nn.Linear(num_classes, num_classes)
-        self.classifier_semantic = nn.Linear(semantic_dim, num_classes)
-        self.classifier_fused = nn.Linear(num_classes + semantic_dim, num_classes)
+        # The semantic-side heads exist only when the view does: a structural-only
+        # run must be exactly CG3, with no extra trainable parameters (a bias-only
+        # branch blended into the outputs acts as a learned class prior).
+        if semantic_channel is not None:
+            self.classifier_semantic = nn.Linear(semantic_dim, num_classes)
+            self.classifier_fused = nn.Linear(num_classes + semantic_dim, num_classes)
+        else:
+            self.classifier_semantic = None
+            self.classifier_fused = None
 
         self.state: dict = {}  # tensors of the last forward pass, for inspection
 
@@ -130,29 +146,34 @@ class CG3SemanticModel(nn.Module):
         z_global = F.normalize(self.global_model(inputs.features), p=2, dim=1)
         z_structural = F.normalize(LOCAL_WEIGHT * z_local + GLOBAL_WEIGHT * z_global, p=2, dim=1)
 
-        # semantic view
-        semantic_available = self.semantic_channel is not None and tags is not None and len(tags) == n
+        # semantic view (channels that carry their own embeddings need no texts)
+        semantic_available = self.semantic_channel is not None and (
+            not getattr(self.semantic_channel, "requires_texts", True)
+            or (tags is not None and len(tags) == n)
+        )
+        logits_structural = self.classifier_struct(z_structural)
         if semantic_available:
             descriptors, x_semantic, h_semantic, logits_semantic = self.semantic_channel(tags)
             z_semantic = F.normalize(h_semantic.to(z_structural.device), p=2, dim=1)
             logits_semantic = logits_semantic.to(z_structural.device)
             loss_hsic = hsic_loss(z_structural, z_semantic, sigma=self.hsic_sigma, max_samples=self.hsic_max_samples)
-        else:
-            descriptors, x_semantic = None, None
-            z_semantic = z_structural.new_zeros((n, self.semantic_dim))
-            logits_semantic = self.classifier_semantic(z_semantic)
-            loss_hsic = z_structural.new_zeros(())
 
-        # HSIC gate and fusion
-        logits_structural = self.classifier_struct(z_structural)
-        low_hsic = semantic_available and loss_hsic.item() < self.hsic_threshold
-        if low_hsic:
-            outputs = self.classifier_fused(torch.cat([z_structural, z_semantic], dim=-1))
-            alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
+            # HSIC gate and fusion
+            low_hsic = loss_hsic.item() < self.hsic_threshold
+            if low_hsic:
+                outputs = self.classifier_fused(torch.cat([z_structural, z_semantic], dim=-1))
+                alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
+            else:
+                outputs, alpha_structural, alpha_semantic, entropy_structural, entropy_semantic = entropy_attention(
+                    logits_structural, logits_semantic
+                )
         else:
-            outputs, alpha_structural, alpha_semantic, entropy_structural, entropy_semantic = entropy_attention(
-                logits_structural, logits_semantic
-            )
+            # structural-only control: plain CG3 — no zero-vector branch, no fusion
+            descriptors = x_semantic = z_semantic = logits_semantic = None
+            loss_hsic = z_structural.new_zeros(())
+            low_hsic = False
+            outputs = logits_structural
+            alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
 
         # losses
         loss_ce = masked_softmax_cross_entropy(outputs, labels, mask)
@@ -165,9 +186,9 @@ class CG3SemanticModel(nn.Module):
 
         self.state = {
             "z_structural": z_structural.detach(),
-            "z_semantic": z_semantic.detach(),
+            "z_semantic": None if z_semantic is None else z_semantic.detach(),
             "logits_structural": logits_structural.detach(),
-            "logits_semantic": logits_semantic.detach(),
+            "logits_semantic": None if logits_semantic is None else logits_semantic.detach(),
             "alpha_structural": None if alpha_structural is None else alpha_structural.detach(),
             "alpha_semantic": None if alpha_semantic is None else alpha_semantic.detach(),
             "entropy_structural": None if entropy_structural is None else entropy_structural.detach(),
@@ -186,6 +207,12 @@ class CG3SemanticModel(nn.Module):
             "train_acc": masked_accuracy(outputs, labels, mask).item(),
             "fused_by_concat": float(low_hsic),
         }
+        if alpha_semantic is not None:
+            # entropy attention weights confidence, not correctness — keep the
+            # mix inspectable so a mis-calibrated branch is visible in MLflow
+            terms["alpha_semantic_mean"] = alpha_semantic.mean().item()
+            terms["entropy_structural_mean"] = entropy_structural.mean().item()
+            terms["entropy_semantic_mean"] = entropy_semantic.mean().item()
         return outputs, loss, terms
 
     def _edge_loss(self, z_local: torch.Tensor, z_global: torch.Tensor, edge_pos: torch.Tensor) -> torch.Tensor:
@@ -224,14 +251,33 @@ def load_texts(path: str, num_nodes: int) -> list[str]:
 
 
 def build_semantic_channel(args, num_classes: int) -> nn.Module:
+    if args.semantic_embeddings:
+        from src.semantic import PrecomputedSemanticChannel
+
+        embeddings = torch.from_numpy(np.load(args.semantic_embeddings)).float()
+        return PrecomputedSemanticChannel(
+            embeddings=embeddings,
+            hidden_dim=args.semantic_hidden,
+            semantic_dim=args.semantic_dim,
+            num_classes=num_classes,
+        )
     from src.semantic import GraniteDescriptorGenerator, HuggingFaceSentenceEncoder, SemanticChannel
 
+    class_names = ([c.strip() for c in args.class_names.split(",")] if args.class_names
+                   else PLANETOID_CLASSES[args.dataset])
+    descriptor = None
+    if args.descriptor == "tape":
+        descriptor = GraniteDescriptorGenerator(
+            args.descriptor_model, max_new_tokens=args.descriptor_max_tokens, class_names=class_names,
+        )
     return SemanticChannel(
-        descriptor_generator=GraniteDescriptorGenerator(args.descriptor_model, max_new_tokens=args.descriptor_max_tokens),
+        descriptor_generator=descriptor,
         sentence_encoder=HuggingFaceSentenceEncoder(args.encoder_model),
         hidden_dim=args.semantic_hidden,
         semantic_dim=args.semantic_dim,
         num_classes=num_classes,
+        class_names=class_names,
+        strip_labels=not args.keep_label_leak,
     )
 
 
@@ -378,9 +424,23 @@ def parse_args() -> argparse.Namespace:
     g.add_argument("--semantic", action="store_true", help="turn the semantic view on (needs --texts)")
     g.add_argument("--semantic-dim", type=int, default=128)
     g.add_argument("--semantic-hidden", type=int, default=256, help="hidden width of the semantic MLP")
+    g.add_argument("--descriptor", default="none", choices=("none", "tape"),
+                   help="none = encode the node's own text (primary arm; Chen et al. 2024 Obs. 3/6); "
+                        "tape = encode an LLM prediction+explanation of it (He et al. 2024)")
+    g.add_argument("--class-names", default=None,
+                   help="comma-separated class names for the TAPE prompt and the leak stripper; "
+                        "defaults to the dataset's published names")
+    g.add_argument("--keep-label-leak", action="store_true",
+                   help="do NOT strip label declarations from generated explanations "
+                        "(leak-control arm only — an unstripped 'Answer:' line reports "
+                        "label leakage as semantic gain)")
     g.add_argument("--descriptor-model", default="ibm-granite/granite-4.2-3b", help="LLM that rewrites node text into a descriptor")
     g.add_argument("--descriptor-max-tokens", type=int, default=256)
     g.add_argument("--encoder-model", default="sentence-transformers/all-MiniLM-L6-v2", help="sentence encoder")
+    g.add_argument("--semantic-embeddings", default=None,
+                   help=".npy of precomputed embeddings [num_nodes, dim], PyG node order; "
+                        "skips the descriptor LLM and the encoder (for API-only encoders "
+                        "and for freezing one view across seeds/arms)")
     g.add_argument("--hsic-threshold", type=float, default=0.1, help="below this HSIC the views are concatenated")
     g.add_argument("--hsic-sigma", type=float, default=1.0)
     g.add_argument("--hsic-weight", type=float, default=0.1)
@@ -411,8 +471,14 @@ def main(args: argparse.Namespace) -> float:
 
     data = load_planetoid(args.dataset, args.data_root)
     tags = load_texts(args.texts, data.num_nodes) if args.texts else None
-    if args.semantic and tags is None:
-        raise SystemExit("--semantic needs --texts: Planetoid ships bag-of-words features, not the node texts")
+    if args.semantic and tags is None and not args.semantic_embeddings:
+        raise SystemExit("--semantic needs --texts or --semantic-embeddings: "
+                         "Planetoid ships bag-of-words features, not the node texts")
+    if args.semantic_embeddings:
+        emb_rows = np.load(args.semantic_embeddings, mmap_mode="r").shape[0]
+        if emb_rows != data.num_nodes:
+            raise SystemExit(f"{args.semantic_embeddings}: {emb_rows} rows, "
+                             f"but the graph has {data.num_nodes} nodes")
     log.info("%s: %d nodes, %d edges, %d features, %d classes; device=%s",
              args.dataset, data.num_nodes, data.num_edges, data.num_features, int(data.y.max()) + 1, device)
 
@@ -422,8 +488,13 @@ def main(args: argparse.Namespace) -> float:
                             (hierarchy.supports, hierarchy.pool, hierarchy.unpool, hierarchy.node_wgt)])
     log.info("hierarchy: %s nodes per level (%.1fs)", [s.size(0) for s in hierarchy.supports], time.perf_counter() - start)
 
+    semantic_tag = ""
+    if args.semantic:
+        view = (Path(args.semantic_embeddings).stem if args.semantic_embeddings
+                else f"{args.descriptor}-{args.encoder_model.split('/')[-1]}")
+        semantic_tag = f"_semantic-{view}" + ("-LEAK" if args.keep_label_leak else "")
     run_name = (f"{args.dataset}_{args.local_model}-{args.global_model}"
-                f"_{args.label_strategy}-{format_budget(args.budget)}" + ("_semantic" if args.semantic else ""))
+                f"_{args.label_strategy}-{format_budget(args.budget)}{semantic_tag}")
     mlf = MLflowLogger(not args.no_mlflow, args.mlflow_uri, args.mlflow_experiment, run_name, vars(args))
     every = max(1, args.epoch_log_every)
     accs, f1s, runtimes = [], [], []

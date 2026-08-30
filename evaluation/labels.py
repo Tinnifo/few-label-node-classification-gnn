@@ -22,8 +22,12 @@ def set_seed(seed: int) -> None:
 
 
 def set_few_label_mask(data, num_labels_per_class: int, seed: int):
-    """Keep `num_labels_per_class` training nodes of every class (or all of
-    them, if a class has fewer)."""
+    """Keep `num_labels_per_class` training nodes of every class.
+
+    Refuses an unsatisfiable budget instead of silently capping: the pool is
+    the dataset's public training mask (20/class on Planetoid), so a larger
+    request would quietly return 20 and mislabel every downstream number.
+    """
     set_seed(seed)
     num_classes = int(data.y.max()) + 1
     pool = data.train_mask.clone()
@@ -31,6 +35,12 @@ def set_few_label_mask(data, num_labels_per_class: int, seed: int):
     train_mask = torch.zeros(data.num_nodes, dtype=torch.bool, device=device)
     for c in range(num_classes):
         idx = ((data.y == c) & pool).nonzero(as_tuple=True)[0]
+        if idx.numel() < num_labels_per_class:
+            raise SystemExit(
+                f"label budget {num_labels_per_class}/class is not satisfiable: "
+                f"class {c} has only {idx.numel()} nodes in the public training pool "
+                f"(Planetoid ships 20/class) — the run would silently use fewer labels than reported"
+            )
         idx = idx[torch.randperm(idx.size(0)).to(device)]
         train_mask[idx[:num_labels_per_class]] = True
     data.train_mask = train_mask
