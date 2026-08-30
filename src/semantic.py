@@ -149,32 +149,37 @@ class HuggingFaceSentenceEncoder(nn.Module):
     def embedding_dim(self) -> int:
         return self.backbone.config.hidden_size
 
-    def forward(self, texts: list[str]) -> torch.Tensor:
+    def forward(self, texts: list[str], batch_size: int = 64) -> torch.Tensor:
+        """Encode in minibatches: a whole corpus (PubMed = 19,717 texts) as one
+        batch OOMs any GPU. Frozen path only holds one batch of activations."""
         device = next(self.backbone.parameters()).device
         if self.input_prefix:
             texts = [self.input_prefix + t for t in texts]
-        encoded = self.tokenizer(
-            texts,
-            padding=True,
-            truncation=True,
-            max_length=self.max_length,
-            return_tensors="pt",
-        )
-        encoded = {key: value.to(device) for key, value in encoded.items()}
-        if self.freeze:
-            with torch.no_grad():
+        chunks = []
+        for i in range(0, len(texts), batch_size):
+            encoded = self.tokenizer(
+                texts[i:i + batch_size],
+                padding=True,
+                truncation=True,
+                max_length=self.max_length,
+                return_tensors="pt",
+            )
+            encoded = {key: value.to(device) for key, value in encoded.items()}
+            if self.freeze:
+                with torch.no_grad():
+                    outputs = self.backbone(**encoded)
+            else:
                 outputs = self.backbone(**encoded)
-        else:
-            outputs = self.backbone(**encoded)
 
-        token_embeddings = outputs.last_hidden_state
-        mask = encoded["attention_mask"].unsqueeze(-1).float()
-        sum_embeddings = torch.sum(token_embeddings * mask, dim=1)
-        sum_mask = torch.clamp(mask.sum(dim=1), min=1e-9)
-        sentence_embeddings = sum_embeddings / sum_mask
-        if self.normalize:
-            sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
-        return sentence_embeddings
+            token_embeddings = outputs.last_hidden_state
+            mask = encoded["attention_mask"].unsqueeze(-1).float()
+            sum_embeddings = torch.sum(token_embeddings * mask, dim=1)
+            sum_mask = torch.clamp(mask.sum(dim=1), min=1e-9)
+            sentence_embeddings = sum_embeddings / sum_mask
+            if self.normalize:
+                sentence_embeddings = F.normalize(sentence_embeddings, p=2, dim=1)
+            chunks.append(sentence_embeddings.cpu() if self.freeze else sentence_embeddings)
+        return torch.cat(chunks, dim=0)
 
 
 class SemanticChannel(nn.Module):

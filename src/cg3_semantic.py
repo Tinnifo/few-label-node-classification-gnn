@@ -289,35 +289,31 @@ def load_texts(path: str, num_nodes: int) -> list[str]:
     return texts
 
 
-def build_semantic_channel(args, num_classes: int) -> nn.Module:
-    if args.semantic_embeddings:
-        from src.semantic import PrecomputedSemanticChannel
+def compute_semantic_view(args, tags: list[str] | None, device: torch.device) -> torch.Tensor:
+    """Materialize the semantic view ONCE per run as a frozen [N, D] tensor.
 
-        embeddings = torch.from_numpy(np.load(args.semantic_embeddings)).float()
-        return PrecomputedSemanticChannel(
-            embeddings=embeddings,
-            hidden_dim=args.semantic_hidden,
-            semantic_dim=args.semantic_dim,
-            num_classes=num_classes,
-        )
-    from src.semantic import GraniteDescriptorGenerator, HuggingFaceSentenceEncoder, SemanticChannel
+    Each seed then trains a fresh head (PrecomputedSemanticChannel) on the
+    identical embeddings — the view is deterministic across seeds (what
+    paired-by-seed comparison assumes), and the corpus is never re-encoded
+    per seed (10x waste; Granite descriptors would be 10x LLM inference).
+    """
+    if args.semantic_embeddings:
+        return torch.from_numpy(np.load(args.semantic_embeddings)).float()
+
+    from src.semantic import GraniteDescriptorGenerator, HuggingFaceSentenceEncoder, strip_label_declarations
 
     class_names = ([c.strip() for c in args.class_names.split(",")] if args.class_names
                    else PLANETOID_CLASSES[args.dataset])
-    descriptor = None
+    texts = list(tags)
     if args.descriptor == "tape":
-        descriptor = GraniteDescriptorGenerator(
+        generator = GraniteDescriptorGenerator(
             args.descriptor_model, max_new_tokens=args.descriptor_max_tokens, class_names=class_names,
-        )
-    return SemanticChannel(
-        descriptor_generator=descriptor,
-        sentence_encoder=HuggingFaceSentenceEncoder(args.encoder_model),
-        hidden_dim=args.semantic_hidden,
-        semantic_dim=args.semantic_dim,
-        num_classes=num_classes,
-        class_names=class_names,
-        strip_labels=not args.keep_label_leak,
-    )
+        ).to(device)
+        texts = generator(texts)
+        if not args.keep_label_leak:
+            texts = [strip_label_declarations(t, class_names) for t in texts]
+    encoder = HuggingFaceSentenceEncoder(args.encoder_model).to(device)
+    return encoder(texts).detach().cpu()
 
 
 # ---------------------------------------------------------------------------
@@ -354,11 +350,22 @@ def predict(model: CG3SemanticModel, inputs: CG3Inputs, tags):
     return outputs.argmax(dim=1), outputs
 
 
-def run_seed(args, data, hierarchy: Hierarchy, tags, seed: int, device: torch.device) -> dict:
+def run_seed(args, data, hierarchy: Hierarchy, semantic_view: torch.Tensor | None,
+             seed: int, device: torch.device) -> dict:
     set_seed(seed)
     data = apply_label_strategy(data.clone(), args.label_strategy, args.budget, seed)
     inputs = build_inputs(data).to(device)
-    semantic_channel = build_semantic_channel(args, inputs.num_classes) if args.semantic else None
+    semantic_channel = None
+    if semantic_view is not None:
+        from src.semantic import PrecomputedSemanticChannel
+
+        # fresh trainable head per seed on the identical frozen view
+        semantic_channel = PrecomputedSemanticChannel(
+            embeddings=semantic_view,
+            hidden_dim=args.semantic_hidden,
+            semantic_dim=args.semantic_dim,
+            num_classes=inputs.num_classes,
+        )
     model = build_model(args, inputs, hierarchy, semantic_channel).to(device)
     optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0)  # L2 is inside the loss
 
@@ -524,6 +531,16 @@ def main(args: argparse.Namespace) -> float:
     log.info("%s: %d nodes, %d edges, %d features, %d classes; device=%s",
              args.dataset, data.num_nodes, data.num_edges, data.num_features, int(data.y.max()) + 1, device)
 
+    semantic_view = None
+    if args.semantic:
+        t0 = time.perf_counter()
+        semantic_view = compute_semantic_view(args, tags, device)
+        if semantic_view.size(0) != data.num_nodes:
+            raise SystemExit(f"semantic view has {semantic_view.size(0)} rows, "
+                             f"but the graph has {data.num_nodes} nodes")
+        log.info("semantic view: %s, computed once for all seeds (%.1fs)",
+                 tuple(semantic_view.shape), time.perf_counter() - t0)
+
     start = time.perf_counter()
     hierarchy = build_hierarchy(data, args.coarsen_level, args.max_node_wgt)
     hierarchy = Hierarchy(*[[t.to(device) for t in tensors] for tensors in
@@ -542,7 +559,7 @@ def main(args: argparse.Namespace) -> float:
     accs, f1s, runtimes = [], [], []
     try:
         for seed in seeds:
-            result = run_seed(args, data, hierarchy, tags, seed, device)
+            result = run_seed(args, data, hierarchy, semantic_view, seed, device)
             m = result["metrics"]
             accs.append(m["accuracy"])
             f1s.append(m["macro_f1"])
