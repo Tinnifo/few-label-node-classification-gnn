@@ -1,0 +1,14 @@
+# A4 (amended): UNSTRIPPED LLM explanations, PRECOMPUTED — the LLMNodeBed
+# gpt-4o-mini dumps WITHOUT stripping — the leak control, embedded and shipped
+# in the data bundles. This is the exact view the H3 prior was measured on.
+# (In-pipeline Granite generation is deferred: unbatched, ~5 s/node.)
+enabled: true
+descriptor: none
+encoder: sentence-transformers/all-MiniLM-L6-v2   # unused on this arm
+embeddings: datasets/tag/${dataset.bundle_dir}/${dataset.bundle_dir}_sem_tape_full.npy
+keep_label_leak: false
+dim: 128
+hidden: 256
+descriptor_model: ibm-granite/granite-4.2-3b   # unused on this arm
+descriptor_max_tokens: 256
+class_names: null
