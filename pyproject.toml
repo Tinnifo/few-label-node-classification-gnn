@@ -1,16 +1,15 @@
 [project]
 name = "few-label-node-classification-gnn"
 version = "0.1.0"
-description = "CG3 plus a semantic view for few-label node classification"
+description = "CG3 plus a semantic view, HSIC-gated and fused by entropy attention, for few-label node classification"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
-    "torch",
-    "torch-geometric",
+    "torch>=2.6",
+    "torch-geometric>=2.6",
     "numpy",
-    "pandas",
-    "scikit-learn",
     "scipy",
+    "scikit-learn",
     "mlflow",
     "transformers",
 ]
