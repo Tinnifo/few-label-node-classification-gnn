@@ -5,8 +5,11 @@ submitted: results get appended to §4, predictions in §2–§3 are never edite
 A prediction that turns out wrong is a result, not a mistake — the only way to
 ruin this document is to change it after seeing data.
 
-Priors marked `(single-seed)` come from July's one-seed probes: trust their
-*direction and ordering*, let the 10-seed paired CIs decide magnitude.
+Priors marked `(probe)` come from the July E3 measurement (2026-07-28, job
+7402608c): a **training-free linear probe** over the four staged views,
+pooled across cora/citeseer/pubmed — not a trained CG3 model, and not
+per-dataset. Trust their *direction and ordering*; the magnitudes may not
+transfer to a trained model at all. The 10-seed paired CIs decide.
 
 ## 1. The yardstick (decided before any run)
 
@@ -37,10 +40,10 @@ A1 = `sbert`, A2 = `e5`, A2′ = `gpt3l`, A3 = `tape`, A4 = `tape_leak`.
 
 | # | claim | prediction (prior) | falsified if | action per outcome |
 | --- | --- | --- | --- | --- |
-| H1 | Encoder capacity is the dominant axis | Δ(A2′−A0) > Δ(A1−A0) > 0; priors: +0.067 and +0.017 on cora `(single-seed)` | ordering flips, or both CIs include 0 | holds → capacity is the headline; both null → semantic view doesn't help CG3 at few labels, fusion diagnostics become the story |
+| H1 | Encoder capacity is the dominant axis | Δ(A2′−A0) > Δ(A1−A0) > 0; priors: gpt3l +0.067, sbert +0.017, pooled over the three graphs `(probe)` | ordering flips, or both CIs include 0 | holds → capacity is the headline; both null → semantic view doesn't help CG3 at few labels, fusion diagnostics become the story |
 | H1b | The open mid-size encoder sits between | Δ(A1−A0) ≤ Δ(A2−A0) ≤ Δ(A2′−A0) | A2 outside the bracket | either way, feeds the width-confound discussion (384 vs 1024 vs 3072 d) |
-| H2 | Stripped explanations add nothing over own text | Δ(A3−A1) ≈ 0; prior +0.005 `(single-seed)` | CI excludes 0 AND ≥ 0.5 pts | holds → explanation view stays secondary; violated → Granite-TAPE prompt differs from the LLMNodeBed dumps — inspect descriptors before believing it |
-| H3 | Label leakage inflates the unstripped arm | Δ(A4−A3) ≈ +0.010 to +0.015; prior +0.0136 `(single-seed)` | A4 ≈ A3 (CI includes 0) | holds → stripper validated, A4 is the cautionary row; null → check whether Granite declares labels at all (V3), or the stripper over-strips |
+| H2 | Stripped explanations add nothing over own text | Δ(A3−A1) ≈ 0; prior: explanation +0.0048 vs sbert +0.0170, diff −0.012 at p=0.75 — indistinguishable `(probe)` | CI excludes 0 AND ≥ 0.5 pts | holds → explanation view stays secondary; violated → Granite-TAPE prompt differs from the LLMNodeBed dumps — inspect descriptors before believing it |
+| H3 | Label leakage inflates the unstripped arm | Δ(A4−A3) ≈ +0.010 to +0.015; prior +0.0136 `(probe)` | A4 ≈ A3 (CI includes 0) | holds → stripper validated, A4 is the cautionary row; null → check whether Granite declares labels at all (V3), or the stripper over-strips |
 | H4 | Datasets do not agree in magnitude | pubmed Δs smaller than cora Δs (denser text already in BoW features; neighbor-structure evidence from Chen Obs. 15–16 suggests dataset-dependence) | pubmed ≥ cora | either way: report per-dataset, never pooled |
 
 **citeseer_tag:** within-arm comparisons only — its absolute numbers are not
@@ -64,8 +67,9 @@ After results land, answer in writing, in this order:
 
 1. Did every validity check pass? If not, stop — fix, rerun, only then read on.
 2. For each H: verdict. For every *refuted* row: was the prior wrong, or the
-   setup different from the prior's setup? (E3 priors came from one seed and a
-   different fusion path — "refuted" may mean "the prior didn't transfer".)
+   setup different from the prior's setup? (E3 priors came from a
+   training-free probe pooled over three graphs, not a trained CG3 —
+   "refuted" may mean "the prior didn't transfer".)
 3. What surprised you? (If nothing surprised you, the predictions were too
    safe — next preregistration, tighten the ranges.)
 4. What is the single next experiment this result licenses — and what would
