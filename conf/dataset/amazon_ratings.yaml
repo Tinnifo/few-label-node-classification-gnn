@@ -1,0 +1,6 @@
+# Heterophilic TAG bundle (flnc/tag_hetero), loaded TAG-native.
+# No shipped split — load_tag_native synthesizes 25/25/50 pool/val/test (RNG 0).
+name: amazon_ratings
+bundle_dir: amazon_ratings
+data_root: datasets
+texts: null

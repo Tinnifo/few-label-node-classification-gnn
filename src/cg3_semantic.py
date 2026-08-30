@@ -43,7 +43,10 @@ log = logging.getLogger("cg3_semantic")
 
 PLANETOID = {"cora": "Cora", "citeseer": "CiteSeer", "pubmed": "PubMed"}
 # TAG releases used AS the graph, where the text cannot be aligned to Planetoid
-TAG_NATIVE = {"citeseer_tag": "citeseer"}
+TAG_NATIVE = {"citeseer_tag": "citeseer",
+              # heterophilic TAG bundles (no shipped split — synthesized, see load_tag_native)
+              "actor": "actor", "amazon_ratings": "amazon_ratings", "cornell": "cornell",
+              "texas": "texas", "washington": "washington", "wisconsin": "wisconsin"}
 # Published class names (label_texts of the TAG releases; Chen et al. 2024) —
 # used in the TAPE-style prompt and by the label-leak stripper.
 PLANETOID_CLASSES = {
@@ -101,6 +104,7 @@ class CG3SemanticModel(nn.Module):
                  temperature: float = 0.5, hp1: float = 0.9,
                  semantic_channel: nn.Module | None = None, semantic_dim: int = 128,
                  hsic_threshold: float = 0.1, hsic_sigma: float = 1.0, hsic_weight: float = 0.1,
+                 fusion: str = "auto",
                  hsic_max_samples: int = 1024):
         super().__init__()
         self.num_classes = num_classes
@@ -113,6 +117,9 @@ class CG3SemanticModel(nn.Module):
         self.hsic_sigma = float(hsic_sigma)
         self.hsic_weight = float(hsic_weight)
         self.hsic_max_samples = int(hsic_max_samples)
+        if fusion not in ("auto", "concat", "attention"):
+            raise ValueError(f"fusion must be auto|concat|attention, got {fusion!r}")
+        self.fusion = fusion
 
         if local_model == "gat":
             Layer, hidden_act, output_dropout = GraphAttention, F.elu, dropout
@@ -163,8 +170,13 @@ class CG3SemanticModel(nn.Module):
             logits_semantic = logits_semantic.to(z_structural.device)
             loss_hsic = hsic_loss(z_structural, z_semantic, sigma=self.hsic_sigma, max_samples=self.hsic_max_samples)
 
-            # HSIC gate and fusion
-            low_hsic = loss_hsic.item() < self.hsic_threshold
+            # Fusion: 'auto' = HSIC gate (measured degenerate at tau=0.1 — FEW-30);
+            # 'concat'/'attention' force one path, making the mechanism an
+            # explicit experimental factor instead of the gate's hidden choice.
+            if self.fusion == "auto":
+                low_hsic = loss_hsic.item() < self.hsic_threshold
+            else:
+                low_hsic = self.fusion == "concat"
             if low_hsic:
                 outputs = self.classifier_fused(torch.cat([z_structural, z_semantic], dim=-1))
                 alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
@@ -275,9 +287,32 @@ def load_tag_native(name: str, root: str = "datasets"):
         edge_index=torch.cat([und, und.flip(0)], dim=1),  # canonical list -> both directions
         y=torch.from_numpy(z["node_labels"]).long(),
     )
-    split = np.load(base / f"{ds}_planetoid_split.npz", allow_pickle=True)
-    for k in ("train_mask", "val_mask", "test_mask"):
-        setattr(data, k, torch.from_numpy(split[k]))
+    split_file = base / f"{ds}_planetoid_split.npz"
+    if split_file.exists():
+        split = np.load(split_file, allow_pickle=True)
+        for k in ("train_mask", "val_mask", "test_mask"):
+            setattr(data, k, torch.from_numpy(split[k]))
+    else:
+        # Heterophilic bundles ship no split. Synthesize ONE fixed partition
+        # (RNG(0), dataset-independent rule, preregistered in hypotheses_few31):
+        # CLASS-STRATIFIED 25% train pool / 25% val / 50% test — unstratified
+        # sampling leaves rare classes with an empty pool (texas: one class has
+        # 0 of 187 nodes in a random 25%). At least one node per class lands in
+        # each of pool and val. Per-seed label budgets are then sampled from
+        # the pool by apply_label_strategy, so eval sets are identical across
+        # seeds and arms.
+        rng = np.random.RandomState(0)
+        y_np = data.y.numpy()
+        masks = {k: np.zeros(data.num_nodes, dtype=bool) for k in ("train_mask", "val_mask", "test_mask")}
+        for c in np.unique(y_np):
+            idx = rng.permutation(np.where(y_np == c)[0])
+            n_pool = max(1, int(0.25 * len(idx)))
+            n_val = max(1, int(0.25 * len(idx)))
+            masks["train_mask"][idx[:n_pool]] = True
+            masks["val_mask"][idx[n_pool:n_pool + n_val]] = True
+            masks["test_mask"][idx[n_pool + n_val:]] = True
+        for k, v in masks.items():
+            setattr(data, k, torch.from_numpy(v))
     return data
 
 
@@ -334,6 +369,7 @@ def build_model(args, inputs: CG3Inputs, hierarchy: Hierarchy, semantic_channel:
         weight_decay=args.weight_decay, temperature=args.temperature, hp1=args.hp1,
         semantic_channel=semantic_channel, semantic_dim=args.semantic_dim,
         hsic_threshold=args.hsic_threshold, hsic_sigma=args.hsic_sigma,
+        fusion=args.fusion,
         hsic_weight=args.hsic_weight, hsic_max_samples=args.hsic_max_samples,
     )
 
@@ -489,6 +525,8 @@ def parse_args() -> argparse.Namespace:
                    help=".npy of precomputed embeddings [num_nodes, dim], PyG node order; "
                         "skips the descriptor LLM and the encoder (for API-only encoders "
                         "and for freezing one view across seeds/arms)")
+    g.add_argument("--fusion", default="auto", choices=("auto", "concat", "attention"),
+                   help="auto = HSIC gate; concat/attention force one path (mechanism as a factor)")
     g.add_argument("--hsic-threshold", type=float, default=0.1, help="below this HSIC the views are concatenated")
     g.add_argument("--hsic-sigma", type=float, default=1.0)
     g.add_argument("--hsic-weight", type=float, default=0.1)

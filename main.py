@@ -49,6 +49,7 @@ def to_namespace(cfg: DictConfig) -> argparse.Namespace:
         keep_label_leak=bool(sem.keep_label_leak),
         descriptor_model=sem.descriptor_model, descriptor_max_tokens=sem.descriptor_max_tokens,
         encoder_model=sem.encoder, semantic_embeddings=sem.embeddings,
+        fusion=cfg.fusion,
         hsic_threshold=cfg.hsic.threshold, hsic_sigma=cfg.hsic.sigma,
         hsic_weight=cfg.hsic.weight, hsic_max_samples=cfg.hsic.max_samples,
         # training

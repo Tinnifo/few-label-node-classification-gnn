@@ -1,0 +1,14 @@
+# Precomputed sbert view from the bundle (all-MiniLM-L6-v2, 384d) — the
+# uniform view for the heterophily axis (gpt3l exists only for 4/6 hetero
+# graphs; sbert is shipped for all). Same encoder as `sbert`, but read from
+# the bundle instead of encoded in-job, so hetero jobs need no text files.
+enabled: true
+descriptor: none
+encoder: sentence-transformers/all-MiniLM-L6-v2   # unused on this arm
+embeddings: datasets/tag/${dataset.bundle_dir}/${dataset.bundle_dir}_sem_sbert.npy
+keep_label_leak: false
+dim: 128
+hidden: 256
+descriptor_model: ibm-granite/granite-4.2-3b   # unused on this arm
+descriptor_max_tokens: 256
+class_names: null

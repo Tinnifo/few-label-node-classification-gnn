@@ -1,0 +1,6 @@
+# Heterophilic TAG bundle (flnc/tag_hetero), loaded TAG-native.
+# No shipped split — load_tag_native synthesizes 25/25/50 pool/val/test (RNG 0).
+name: actor
+bundle_dir: actor
+data_root: datasets
+texts: null
