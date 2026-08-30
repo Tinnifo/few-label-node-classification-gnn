@@ -99,3 +99,18 @@ def hsic_loss(z1: torch.Tensor, z2: torch.Tensor, sigma: float = 1.0, max_sample
     K_centered = K - K.mean(dim=0, keepdim=True) - K.mean(dim=1, keepdim=True) + K.mean()
     L_centered = L - L.mean(dim=0, keepdim=True) - L.mean(dim=1, keepdim=True) + L.mean()
     return (K_centered * L_centered).sum() / ((n - 1) ** 2)
+
+
+def linear_cka(x: torch.Tensor, y: torch.Tensor, eps: float = 1e-8) -> torch.Tensor:
+    """Linear CKA (Kornblith et al. 2019): normalized HSIC with a linear kernel.
+
+    Scale-invariant, so it cannot be gamed by shrinking a representation's
+    norm (the alpha^2 pathology of a raw HSIC penalty) — the estimator the
+    shared+private disparity term uses. O(n * d^2): cheap at full batch for
+    the d=64 projection heads.
+    """
+    x = x - x.mean(dim=0, keepdim=True)
+    y = y - y.mean(dim=0, keepdim=True)
+    num = (y.T @ x).pow(2).sum()
+    den = torch.sqrt((x.T @ x).pow(2).sum() * (y.T @ y).pow(2).sum()) + eps
+    return num / den

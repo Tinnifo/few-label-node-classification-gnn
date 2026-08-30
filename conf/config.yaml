@@ -11,7 +11,7 @@ label_strategy: per_class   # per_class | percentage
 budget: 20                  # labels per class (>20 refuses: public pool is 20/class)
 seeds: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 
-fusion: auto   # auto = HSIC gate | concat | attention (forced path)
+fusion: auto   # auto = HSIC gate | concat | attention | shared_private (AM-GCN placement, CKA)
 
 structure:
   local_model: gcn          # gcn | gat

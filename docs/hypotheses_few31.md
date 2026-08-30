@@ -16,11 +16,17 @@ lineage: LLM text helps more as graph signal weakens).
 **Fusion factor:** `concat` vs `attention` (forced paths — FEW-30 showed the
 HSIC gate is degenerate: realized HSIC ≈ 0.01 ≪ τ = 0.1, entropy attention
 never executed). `auto` (the gate) is retained only as the deprecated control.
-**Loss placement (AM-GCN critique):** current cross-view HSIC penalty
+**Loss placement (AM-GCN critique):** the cross-view HSIC penalty
 decorrelates two label-bearing outputs — wrong placement in principle, but at
 w = 0.1 × HSIC ≈ 0.009 it contributes ~0.001 to the loss. Arm F2 (w = 0)
-verifies it is a no-op; the shared+private (AM-GCN-placement, CKA-estimator)
-redesign is DEFERRED to its own experiment.
+verifies it is a no-op. **`fusion=shared_private`** implements the fix
+(added pre-freeze, at Tinni's direction): each view splits into a shared
+channel (consistency loss pulls the pair together — the label lives here)
+and a private channel (linear-CKA disparity from its OWN shared channel —
+scale-invariant, so no α²-shrink gaming); classifier on
+[mean shared, p_struct, p_sem] (d = 64 each); the cross-view HSIC penalty is
+REPLACED by consistency + disparity, both at fixed weight 1.0 (no tuning,
+shared across all arms and datasets). Runs as a third fusion arm everywhere.
 
 **Heterophilic split rule (no shipped splits):** class-stratified, RNG(0):
 per class 25% train pool / 25% val / 50% test (≥1 node per class in pool and
@@ -55,6 +61,9 @@ val). Budgets = min(20, smallest class's pool):
 | G1 | semantic view helps low-homophily graphs | Δ(sbert_pre·concat − A0) > 0 on ≥ 4/6 hetero graphs | ≤ 2/6 positive |
 | G2 | gain grows as homophily falls | Spearman ρ(Δ_concat, homophily) ≤ −0.5 across all 9 graphs (6 hetero + FEW-30's cora/citeseer_tag/pubmed sbert Δs) | ρ > 0, or |ρ| < 0.3 |
 | G3 | (Tinni's expectation) attention beats concat where homophily is low | Δ(attention) − Δ(concat) ≥ +0.5 pts on ≥ 3 of the 4 lowest-homophily graphs | positive on ≤ 1 |
+| S1 | shared_private rescues cora | cora Δ(gpt3l·sp − A0) > Δ(concat) = −0.5 and within noise of 0 (CI touches 0) | sp worse than concat |
+| S2 | shared_private keeps concat's feature-level win | pubmed Δ(gpt3l·sp) ≥ +2.0 (vs concat's +3.9) | sp < +2.0 → the split costs more than the placement fix buys |
+| S3 | shared_private ≥ concat on low-homophily graphs | Δ(sp) ≥ Δ(concat) on ≥ 4/6 hetero graphs | ≤ 2/6 |
 
 **Caveats preregistered:** tiny-graph budgets (1–4/class) make single-graph
 CIs wide — G1/G3 are counted across graphs, not per-graph claims; actor's

@@ -36,7 +36,9 @@ from evaluation.labels import apply_label_strategy, format_budget, set_seed  # n
 from evaluation.metrics import compute_metrics  # noqa: E402
 from src.hgcn import HGAT, HGCN  # noqa: E402
 from src.layers import MLP, GraphAttention, GraphConvolution, identity  # noqa: E402
-from src.losses import hsic_loss, masked_accuracy, masked_softmax_cross_entropy, structural_contrastive_loss  # noqa: E402
+from src.losses import (  # noqa: E402
+    hsic_loss, linear_cka, masked_accuracy, masked_softmax_cross_entropy, structural_contrastive_loss,
+)
 from src.preprocess import CG3Inputs, Hierarchy, build_hierarchy, build_inputs  # noqa: E402
 
 log = logging.getLogger("cg3_semantic")
@@ -117,9 +119,26 @@ class CG3SemanticModel(nn.Module):
         self.hsic_sigma = float(hsic_sigma)
         self.hsic_weight = float(hsic_weight)
         self.hsic_max_samples = int(hsic_max_samples)
-        if fusion not in ("auto", "concat", "attention"):
-            raise ValueError(f"fusion must be auto|concat|attention, got {fusion!r}")
+        if fusion not in ("auto", "concat", "attention", "shared_private"):
+            raise ValueError(f"fusion must be auto|concat|attention|shared_private, got {fusion!r}")
         self.fusion = fusion
+        # shared+private fusion (AM-GCN placement, Wang et al. 2020): each view
+        # splits into a shared channel (pulled together by a consistency loss —
+        # where the label lives) and a private channel (decorrelated from its
+        # OWN shared channel via linear CKA). Never decorrelates two
+        # label-bearing outputs, unlike the cross-view HSIC penalty.
+        # Heads exist only when this mode runs (A0-purity rule).
+        if semantic_channel is not None and fusion == "shared_private":
+            d_sp = max(semantic_dim // 2, num_classes)
+            self.sp_dim = d_sp
+            self.proj_shared_struct = nn.Linear(num_classes, d_sp)
+            self.proj_private_struct = nn.Linear(num_classes, d_sp)
+            self.proj_shared_sem = nn.Linear(semantic_dim, d_sp)
+            self.proj_private_sem = nn.Linear(semantic_dim, d_sp)
+            self.classifier_sp = nn.Linear(3 * d_sp, num_classes)
+        # fixed, shared across arms and datasets (no tuning — preregistered)
+        self.sp_consist_weight = 1.0
+        self.sp_disp_weight = 1.0
 
         if local_model == "gat":
             Layer, hidden_act, output_dropout = GraphAttention, F.elu, dropout
@@ -169,25 +188,38 @@ class CG3SemanticModel(nn.Module):
             z_semantic = F.normalize(h_semantic.to(z_structural.device), p=2, dim=1)
             logits_semantic = logits_semantic.to(z_structural.device)
             loss_hsic = hsic_loss(z_structural, z_semantic, sigma=self.hsic_sigma, max_samples=self.hsic_max_samples)
+            loss_consist = loss_disp = z_structural.new_zeros(())
 
             # Fusion: 'auto' = HSIC gate (measured degenerate at tau=0.1 — FEW-30);
             # 'concat'/'attention' force one path, making the mechanism an
             # explicit experimental factor instead of the gate's hidden choice.
-            if self.fusion == "auto":
+            if self.fusion == "shared_private":
+                c_s = F.normalize(self.proj_shared_struct(z_structural), p=2, dim=1)
+                c_m = F.normalize(self.proj_shared_sem(z_semantic), p=2, dim=1)
+                p_s = self.proj_private_struct(z_structural)
+                p_m = self.proj_private_sem(z_semantic)
+                loss_consist = (c_s - c_m).pow(2).sum(dim=1).mean()
+                loss_disp = linear_cka(p_s, c_s) + linear_cka(p_m, c_m)
+                outputs = self.classifier_sp(torch.cat([(c_s + c_m) / 2, p_s, p_m], dim=-1))
+                low_hsic = False
+                alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
+            elif self.fusion == "auto":
                 low_hsic = loss_hsic.item() < self.hsic_threshold
             else:
                 low_hsic = self.fusion == "concat"
-            if low_hsic:
-                outputs = self.classifier_fused(torch.cat([z_structural, z_semantic], dim=-1))
-                alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
-            else:
-                outputs, alpha_structural, alpha_semantic, entropy_structural, entropy_semantic = entropy_attention(
-                    logits_structural, logits_semantic
-                )
+            if self.fusion != "shared_private":
+                if low_hsic:
+                    outputs = self.classifier_fused(torch.cat([z_structural, z_semantic], dim=-1))
+                    alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
+                else:
+                    outputs, alpha_structural, alpha_semantic, entropy_structural, entropy_semantic = entropy_attention(
+                        logits_structural, logits_semantic
+                    )
         else:
             # structural-only control: plain CG3 — no zero-vector branch, no fusion
             descriptors = x_semantic = z_semantic = logits_semantic = None
             loss_hsic = z_structural.new_zeros(())
+            loss_consist = loss_disp = z_structural.new_zeros(())
             low_hsic = False
             outputs = logits_structural
             alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
@@ -199,7 +231,14 @@ class CG3SemanticModel(nn.Module):
             z_local, z_global, inputs.train_idx, inputs.mat01_intra, inputs.mat01_inter,
             temperature=self.temperature, hp1=self.hp1,
         )
-        loss = loss_ce + GENERATIVE_WEIGHT * loss_gen + loss_contrastive + self.hsic_weight * loss_hsic + self.l2()
+        # shared_private REPLACES the cross-view HSIC penalty (wrong placement:
+        # it decorrelates two label-bearing outputs) with consistency + CKA
+        # disparity in the AM-GCN placement; other modes keep the original term.
+        if self.fusion == "shared_private":
+            penalty = self.sp_consist_weight * loss_consist + self.sp_disp_weight * loss_disp
+        else:
+            penalty = self.hsic_weight * loss_hsic
+        loss = loss_ce + GENERATIVE_WEIGHT * loss_gen + loss_contrastive + penalty + self.l2()
 
         self.state = {
             "z_structural": z_structural.detach(),
@@ -224,6 +263,9 @@ class CG3SemanticModel(nn.Module):
             "train_acc": masked_accuracy(outputs, labels, mask).item(),
             "fused_by_concat": float(low_hsic),
         }
+        if self.fusion == "shared_private" and z_semantic is not None:
+            terms["loss_consist"] = loss_consist.item()
+            terms["loss_disp"] = loss_disp.item()
         if alpha_semantic is not None:
             # entropy attention weights confidence, not correctness — keep the
             # mix inspectable so a mis-calibrated branch is visible in MLflow
@@ -525,7 +567,7 @@ def parse_args() -> argparse.Namespace:
                    help=".npy of precomputed embeddings [num_nodes, dim], PyG node order; "
                         "skips the descriptor LLM and the encoder (for API-only encoders "
                         "and for freezing one view across seeds/arms)")
-    g.add_argument("--fusion", default="auto", choices=("auto", "concat", "attention"),
+    g.add_argument("--fusion", default="auto", choices=("auto", "concat", "attention", "shared_private"),
                    help="auto = HSIC gate; concat/attention force one path (mechanism as a factor)")
     g.add_argument("--hsic-threshold", type=float, default=0.1, help="below this HSIC the views are concatenated")
     g.add_argument("--hsic-sigma", type=float, default=1.0)
@@ -590,6 +632,8 @@ def main(args: argparse.Namespace) -> float:
         view = (Path(args.semantic_embeddings).stem if args.semantic_embeddings
                 else f"{args.descriptor}-{args.encoder_model.split('/')[-1]}")
         semantic_tag = f"_semantic-{view}" + ("-LEAK" if args.keep_label_leak else "")
+        if args.fusion != "auto":
+            semantic_tag += f"_fus-{args.fusion}"
     run_name = (f"{args.dataset}_{args.local_model}-{args.global_model}"
                 f"_{args.label_strategy}-{format_budget(args.budget)}{semantic_tag}")
     mlf = MLflowLogger(not args.no_mlflow, args.mlflow_uri, args.mlflow_experiment, run_name, vars(args))
