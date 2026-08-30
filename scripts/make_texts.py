@@ -24,30 +24,39 @@ from pathlib import Path
 
 import numpy as np
 
-PYG_NUM_NODES = {"cora": 2708, "citeseer": 3327, "pubmed": 19717}
+# dataset -> (bundle directory, expected node count)
+# citeseer (Planetoid, 3327) is refused — the TAG bundle has 3186 nodes;
+# citeseer_tag is the sanctioned TAG-native path (--dataset citeseer_tag).
+DATASETS = {
+    "cora": ("cora", 2708),
+    "citeseer": ("citeseer", 3327),
+    "citeseer_tag": ("citeseer", 3186),
+    "pubmed": ("pubmed", 19717),
+}
 
 
 def main() -> None:
     ap = argparse.ArgumentParser(description=__doc__)
-    ap.add_argument("datasets", nargs="+", choices=sorted(PYG_NUM_NODES))
+    ap.add_argument("datasets", nargs="+", choices=sorted(DATASETS))
     ap.add_argument("--root", default="datasets", help="data root (download_data.py output)")
     ap.add_argument("--force", action="store_true",
                     help="write the file even if the node count does not match PyG Planetoid")
     args = ap.parse_args()
 
     for name in args.datasets:
-        npz = Path(args.root) / "tag" / name / f"{name}.npz"
+        bundle_dir, expected = DATASETS[name]
+        npz = Path(args.root) / "tag" / bundle_dir / f"{bundle_dir}.npz"
         if not npz.exists():
             sys.exit(f"{npz} not found — run scripts/download_data.py first")
         texts = np.load(npz, allow_pickle=True)["node_texts"]
 
-        n, expected = len(texts), PYG_NUM_NODES[name]
+        n = len(texts)
         if n != expected and not args.force:
             sys.exit(
-                f"{name}: bundle has {n} nodes but PyG Planetoid has {expected} — "
-                f"this text file cannot be used with the Planetoid graph. "
-                f"(Known for citeseer: the TAG release is a 3,186-node subset.) "
-                f"Pass --force only for a TAG-native graph path."
+                f"{name}: bundle has {n} nodes but the target graph has {expected} — "
+                f"this text file cannot line up with that graph. "
+                f"For citeseer use `citeseer_tag` (the TAG-native graph path, "
+                f"--dataset citeseer_tag); --force is an escape hatch only."
             )
 
         lines = []

@@ -99,9 +99,14 @@ prefix-matching alone catches only ~60–70% — strip structurally).
 
 ## 3b. Still open
 
-- **CiteSeer**: the TAG release is 3,186 nodes vs PyG's 3,327 —
-  `make_texts.py` refuses it for the Planetoid path. Decide: skip citeseer in
-  semantic arms, or add a TAG-native graph path.
+- **CiteSeer — DECIDED: TAG-native path** (`--dataset citeseer_tag`). The
+  3,186-node TAG release is loaded as the graph itself, with its bundled
+  Planetoid-style split (20/class train, 500 val, rest test) and non-negative
+  bag-of-words features (safe for CG3's row-sum normalization; no LLM
+  embedding in X). Texts: `python scripts/make_texts.py citeseer_tag` →
+  `--texts datasets/tag/citeseer/citeseer_tag_texts.txt`. **Its numbers are
+  not comparable to any published Planetoid-CiteSeer result** — only
+  within-experiment arm comparisons are valid, and the paper must say so.
 - **Acceptance run**: A0 must reproduce the faithful-port CG3 numbers
   seed-for-seed on the cluster before any arm comparison is trusted.
 - **HSIC gate behavior**: the gate flips discretely at `--hsic-threshold`

@@ -42,6 +42,8 @@ from src.preprocess import CG3Inputs, Hierarchy, build_hierarchy, build_inputs  
 log = logging.getLogger("cg3_semantic")
 
 PLANETOID = {"cora": "Cora", "citeseer": "CiteSeer", "pubmed": "PubMed"}
+# TAG releases used AS the graph, where the text cannot be aligned to Planetoid
+TAG_NATIVE = {"citeseer_tag": "citeseer"}
 # Published class names (label_texts of the TAG releases; Chen et al. 2024) —
 # used in the TAPE-style prompt and by the label-leak stripper.
 PLANETOID_CLASSES = {
@@ -50,6 +52,9 @@ PLANETOID_CLASSES = {
     "citeseer": ["Agents", "Artificial Intelligence", "Databases", "Information Retrieval",
                  "Machine Learning", "Human-Computer Interaction"],
     "pubmed": ["Diabetes Mellitus Experimental", "Diabetes Mellitus Type 1", "Diabetes Mellitus Type 2"],
+    # order = the bundle's label_texts (class index 0..5), NOT Planetoid's numbering
+    "citeseer_tag": ["Agents", "Machine Learning", "Information Retrieval", "Databases",
+                     "Human-Computer Interaction", "Artificial Intelligence"],
 }
 LOCAL_WEIGHT, GLOBAL_WEIGHT = 0.6, 0.4  # CG3's fixed mix of the local and global views
 GENERATIVE_WEIGHT = 0.4  # CG3's weight on the edge-reconstruction loss
@@ -242,6 +247,40 @@ def load_planetoid(name: str, root: str):
     return Planetoid(root=root, name=PLANETOID[name.lower()])[0]
 
 
+def load_tag_native(name: str, root: str = "datasets"):
+    """The TAG release AS the graph (Chen et al. 2024, arXiv:2307.03393), for
+    datasets whose text release cannot be aligned to Planetoid.
+
+    citeseer_tag: 3,186 nodes / 4,225 undirected edges — a subset of
+    Planetoid's 3,327 nodes, in a different order. Numbers on it are NOT
+    comparable to published Planetoid-CiteSeer results; only within-experiment
+    arm comparisons are valid, and the paper must say so.
+
+    Ships with a Planetoid-style split (20/class train, 500 val, rest test)
+    from the data-v1 bundle (`split_source: 'TAG release (native mode)'`).
+    Features are the release's non-negative bag-of-words — safe for CG3's
+    row-sum normalization and not an LLM embedding, so the semantic view is
+    not leaked into X.
+    """
+    from torch_geometric.data import Data
+
+    ds = TAG_NATIVE[name]
+    base = Path("datasets" if root == "data" else root) / "tag" / ds
+    if not (base / f"{ds}.npz").exists():
+        raise SystemExit(f"{base / f'{ds}.npz'} not found — run scripts/download_data.py first")
+    z = np.load(base / f"{ds}.npz", allow_pickle=True)
+    und = torch.from_numpy(z["edges"].T).long()
+    data = Data(
+        x=torch.from_numpy(z["node_features"]).float(),
+        edge_index=torch.cat([und, und.flip(0)], dim=1),  # canonical list -> both directions
+        y=torch.from_numpy(z["node_labels"]).long(),
+    )
+    split = np.load(base / f"{ds}_planetoid_split.npz", allow_pickle=True)
+    for k in ("train_mask", "val_mask", "test_mask"):
+        setattr(data, k, torch.from_numpy(split[k]))
+    return data
+
+
 def load_texts(path: str, num_nodes: int) -> list[str]:
     """One line of raw text per node, in PyG node order."""
     texts = Path(path).read_text(encoding="utf-8").splitlines()
@@ -399,7 +438,9 @@ def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(description="CG3 + semantic view for few-label node classification",
                                 formatter_class=argparse.ArgumentDefaultsHelpFormatter)
     g = p.add_argument_group("data")
-    g.add_argument("--dataset", default="cora", choices=sorted(PLANETOID), help="Planetoid dataset")
+    g.add_argument("--dataset", default="cora", choices=sorted(PLANETOID) + sorted(TAG_NATIVE),
+                   help="Planetoid dataset, or a TAG-native graph (citeseer_tag: the 3,186-node "
+                        "text release as the graph — not comparable to Planetoid-CiteSeer numbers)")
     g.add_argument("--data-root", default="data", help="where PyG downloads the datasets")
     g.add_argument("--texts", default=None, help="raw node texts for the semantic view: one line per node, PyG order")
 
@@ -469,7 +510,8 @@ def main(args: argparse.Namespace) -> float:
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu") if args.device == "auto" else torch.device(args.device)
     seeds = [int(s) for s in args.seeds.split(",") if s.strip()]
 
-    data = load_planetoid(args.dataset, args.data_root)
+    data = (load_tag_native(args.dataset, args.data_root) if args.dataset in TAG_NATIVE
+            else load_planetoid(args.dataset, args.data_root))
     tags = load_texts(args.texts, data.num_nodes) if args.texts else None
     if args.semantic and tags is None and not args.semantic_embeddings:
         raise SystemExit("--semantic needs --texts or --semantic-embeddings: "
