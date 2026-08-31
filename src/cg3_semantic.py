@@ -119,9 +119,16 @@ class CG3SemanticModel(nn.Module):
         self.hsic_sigma = float(hsic_sigma)
         self.hsic_weight = float(hsic_weight)
         self.hsic_max_samples = int(hsic_max_samples)
-        if fusion not in ("auto", "concat", "attention", "shared_private"):
-            raise ValueError(f"fusion must be auto|concat|attention|shared_private, got {fusion!r}")
+        if fusion not in ("auto", "concat", "attention", "shared_private", "attention_cal", "attention_srcfix"):
+            raise ValueError(
+                f"fusion must be auto|concat|attention|shared_private|attention_cal|attention_srcfix, got {fusion!r}"
+            )
         self.fusion = fusion
+        # attention_cal: per-branch temperatures, refit on validation in run_seed
+        # (Guo et al. 2017); 1.0 = uncalibrated. attention_srcfix leaves these at 1.
+        self.T_struct = 1.0
+        self.T_sem = 1.0
+        self._branch_logits = None  # (logits_structural, logits_semantic), detached, for T fitting
         # shared+private fusion (AM-GCN placement, Wang et al. 2020): each view
         # splits into a shared channel (pulled together by a consistency loss —
         # where the label lives) and a private channel (decorrelated from its
@@ -208,12 +215,16 @@ class CG3SemanticModel(nn.Module):
             else:
                 low_hsic = self.fusion == "concat"
             if self.fusion != "shared_private":
+                self._branch_logits = (logits_structural.detach(), logits_semantic.detach())
                 if low_hsic:
                     outputs = self.classifier_fused(torch.cat([z_structural, z_semantic], dim=-1))
                     alpha_structural = alpha_semantic = entropy_structural = entropy_semantic = None
                 else:
+                    ls, lm = logits_structural, logits_semantic
+                    if self.fusion == "attention_cal":
+                        ls, lm = ls / self.T_struct, lm / self.T_sem
                     outputs, alpha_structural, alpha_semantic, entropy_structural, entropy_semantic = entropy_attention(
-                        logits_structural, logits_semantic
+                        ls, lm
                     )
         else:
             # structural-only control: plain CG3 — no zero-vector branch, no fusion
@@ -270,6 +281,9 @@ class CG3SemanticModel(nn.Module):
             # entropy attention weights confidence, not correctness — keep the
             # mix inspectable so a mis-calibrated branch is visible in MLflow
             terms["alpha_semantic_mean"] = alpha_semantic.mean().item()
+            if self.fusion == "attention_cal":
+                terms["T_struct"] = self.T_struct
+                terms["T_sem"] = self.T_sem
             terms["entropy_structural_mean"] = entropy_structural.mean().item()
             terms["entropy_semantic_mean"] = entropy_semantic.mean().item()
         return outputs, loss, terms
@@ -445,7 +459,19 @@ def run_seed(args, data, hierarchy: Hierarchy, semantic_view: torch.Tensor | Non
             num_classes=inputs.num_classes,
         )
     model = build_model(args, inputs, hierarchy, semantic_channel).to(device)
-    optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0)  # L2 is inside the loss
+    if args.fusion == "attention_srcfix" and model.semantic_channel is not None:
+        # source fix (Layer 2): regularize the semantic head so it never becomes a
+        # memorizer — weight decay on that branch only; the rest keeps CG3's own L2.
+        sem_ids = {id(p) for p in model.semantic_channel.parameters()}
+        optimizer = torch.optim.Adam(
+            [
+                {"params": [p for p in model.parameters() if id(p) not in sem_ids], "weight_decay": 0.0},
+                {"params": list(model.semantic_channel.parameters()), "weight_decay": 5e-4},
+            ],
+            lr=args.lr,
+        )
+    else:
+        optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=0.0)  # L2 is inside the loss
 
     best_val, best_epoch, best_state = -1.0, 0, trainable_state(model)
     patience_left = args.patience
@@ -458,6 +484,16 @@ def run_seed(args, data, hierarchy: Hierarchy, semantic_view: torch.Tensor | Non
         _, loss, terms = model(inputs, inputs.y_train_oh, inputs.train_mask, tags=None)
         loss.backward()
         optimizer.step()
+
+        if args.fusion == "attention_cal" and model._branch_logits is not None and (epoch == 1 or epoch % 20 == 0):
+            # refit per-branch temperatures on the VALIDATION split (never train:
+            # the memorizer is near-perfect there and would ask to sharpen).
+            with torch.no_grad():
+                vm, yv = inputs.val_mask, inputs.y[inputs.val_mask]
+                grid = torch.logspace(-0.7, 0.95, 24).tolist()
+                for attr, lg in zip(("T_struct", "T_sem"), model._branch_logits):
+                    nlls = [F.cross_entropy(lg[vm] / t, yv).item() for t in grid]
+                    setattr(model, attr, grid[nlls.index(min(nlls))])
 
         pred, outputs = predict(model, inputs, tags=None)
         val_acc = (pred[inputs.val_mask] == inputs.y[inputs.val_mask]).float().mean().item()
@@ -567,7 +603,8 @@ def parse_args() -> argparse.Namespace:
                    help=".npy of precomputed embeddings [num_nodes, dim], PyG node order; "
                         "skips the descriptor LLM and the encoder (for API-only encoders "
                         "and for freezing one view across seeds/arms)")
-    g.add_argument("--fusion", default="auto", choices=("auto", "concat", "attention", "shared_private"),
+    g.add_argument("--fusion", default="auto",
+                   choices=("auto", "concat", "attention", "shared_private", "attention_cal", "attention_srcfix"),
                    help="auto = HSIC gate; concat/attention force one path (mechanism as a factor)")
     g.add_argument("--hsic-threshold", type=float, default=0.1, help="below this HSIC the views are concatenated")
     g.add_argument("--hsic-sigma", type=float, default=1.0)
