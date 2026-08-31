@@ -119,10 +119,14 @@ class CG3SemanticModel(nn.Module):
         self.hsic_sigma = float(hsic_sigma)
         self.hsic_weight = float(hsic_weight)
         self.hsic_max_samples = int(hsic_max_samples)
-        if fusion not in ("auto", "concat", "attention", "shared_private", "attention_cal", "attention_srcfix"):
+        if fusion not in ("auto", "concat", "attention", "shared_private",
+                          "attention_cal", "attention_srcfix", "attention_posthoc"):
             raise ValueError(
-                f"fusion must be auto|concat|attention|shared_private|attention_cal|attention_srcfix, got {fusion!r}"
+                "fusion must be auto|concat|attention|shared_private|attention_cal|"
+                f"attention_srcfix|attention_posthoc, got {fusion!r}"
             )
+        # attention_posthoc trains EXACTLY as plain attention (T stays 1.0 throughout);
+        # calibration happens once in run_seed after the best state is restored.
         self.fusion = fusion
         # attention_cal: per-branch temperatures, refit on validation in run_seed
         # (Guo et al. 2017); 1.0 = uncalibrated. attention_srcfix leaves these at 1.
@@ -511,8 +515,35 @@ def run_seed(args, data, hierarchy: Hierarchy, semantic_view: torch.Tensor | Non
     model.load_state_dict(best_state, strict=False)
     pred, _ = predict(model, inputs, tags=None)
     metrics = compute_metrics(inputs.y[inputs.test_mask].cpu().numpy(), pred[inputs.test_mask].cpu().numpy())
+    posthoc = None
+    if args.fusion == "attention_posthoc" and model._branch_logits is not None:
+        # POST-HOC calibration (Guo et al. 2017): the model above trained and selected
+        # with plain attention; T is fit once, on validation, from the restored best
+        # state's eval-mode branch logits — training was never touched.
+        with torch.no_grad():
+            ls, lm = model._branch_logits
+            vm = inputs.val_mask
+            yv = inputs.y[vm]
+            grid = torch.logspace(-0.7, 0.95, 24).tolist()
+
+            def _fit(lg):
+                nlls = [F.cross_entropy(lg[vm] / t, yv).item() for t in grid]
+                return grid[nlls.index(min(nlls))]
+
+            T_s, T_m = _fit(ls), _fit(lm)
+            fused_cal = entropy_attention(ls / T_s, lm / T_m)[0]
+            tm = inputs.test_mask
+            posthoc = {
+                "T_struct": T_s, "T_sem": T_m,
+                "test_accuracy_cal": (fused_cal[tm].argmax(1) == inputs.y[tm]).float().mean().item(),
+                # per-node dumps for the AUROC / oracle-router analysis
+                "logits_structural": ls.cpu().numpy(), "logits_semantic": lm.cpu().numpy(),
+                "y": inputs.y.cpu().numpy(),
+                "val_mask": inputs.val_mask.cpu().numpy(), "test_mask": inputs.test_mask.cpu().numpy(),
+            }
     return {
         "metrics": metrics,
+        "posthoc": posthoc,
         "epoch_log": epoch_log,
         "best_val_acc": best_val,
         "best_epoch": best_epoch,
@@ -604,7 +635,8 @@ def parse_args() -> argparse.Namespace:
                         "skips the descriptor LLM and the encoder (for API-only encoders "
                         "and for freezing one view across seeds/arms)")
     g.add_argument("--fusion", default="auto",
-                   choices=("auto", "concat", "attention", "shared_private", "attention_cal", "attention_srcfix"),
+                   choices=("auto", "concat", "attention", "shared_private",
+                            "attention_cal", "attention_srcfix", "attention_posthoc"),
                    help="auto = HSIC gate; concat/attention force one path (mechanism as a factor)")
     g.add_argument("--hsic-threshold", type=float, default=0.1, help="below this HSIC the views are concatenated")
     g.add_argument("--hsic-sigma", type=float, default=1.0)
@@ -692,6 +724,16 @@ def main(args: argparse.Namespace) -> float:
                     mlf.log_metrics({f"seed_{seed}/{k}": v for k, v in entry.items() if k != "epoch"}, step=entry["epoch"])
             mlf.log_metrics({f"seed_{seed}/test_accuracy": m["accuracy"], f"seed_{seed}/test_macro_f1": m["macro_f1"],
                              f"seed_{seed}/best_epoch": result["best_epoch"], f"seed_{seed}/runtime_sec": result["runtime_sec"]})
+            if result.get("posthoc"):
+                ph = result["posthoc"]
+                mlf.log_metrics({f"seed_{seed}/test_accuracy_cal": ph["test_accuracy_cal"],
+                                 f"seed_{seed}/T_struct_posthoc": ph["T_struct"],
+                                 f"seed_{seed}/T_sem_posthoc": ph["T_sem"]})
+                os.makedirs("out", exist_ok=True)
+                np.savez_compressed(os.path.join("out", f"logits_{run_name}_seed{seed}.npz"),
+                                    logits_structural=ph["logits_structural"],
+                                    logits_semantic=ph["logits_semantic"], y=ph["y"],
+                                    val_mask=ph["val_mask"], test_mask=ph["test_mask"])
             if args.output:
                 os.makedirs(args.output, exist_ok=True)
                 torch.save({"args": vars(args), "state": result["state"]}, os.path.join(args.output, f"{run_name}_seed{seed}.pt"))
