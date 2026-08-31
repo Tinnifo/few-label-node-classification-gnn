@@ -88,7 +88,7 @@ het small / amazon_ratings; logs, MLflow dbs, probe CSV saved as artifacts).
   competitive with the full pipeline.
 
 **Fusion trio (gpt3l view; Δ vs A0):** concat/attention/shared_private =
-cora −0.5 / −1.9 / −7.8±3.0; citeseer_tag +1.4 / +0.1 / −3.3;
+cora −0.5 / −2.0 / −7.8±3.0; citeseer_tag +1.4 / +0.1 / −3.3;
 pubmed +3.9 / +2.7 / +0.3.
 - **F1 refuted** (attention does not rescue cora). **F1b confirmed**
   (attention < concat on pubmed). **F2 confirmed** (w=0 vs w=0.1 on cora

@@ -83,7 +83,7 @@ experiments go through `main.py`.
 **Leakage rule.** Any generated descriptor must be checked for label
 declarations before encoding (the July measurement: an unstripped
 "Answer: …" line accounts for most of an apparent explanation-view gain;
-prefix-matching alone catches only ~60–70% — strip structurally).
+prefix-matching alone catches only 72% on cora, 29% on citeseer, 45% on pubmed — strip structurally).
 
 ## 3. Closed on this branch
 
@@ -104,7 +104,7 @@ prefix-matching alone catches only ~60–70% — strip structurally).
 5. **TAPE-format prompt + structural leak stripper** — `--descriptor tape`
    uses the closed-category prediction+explanation prompt;
    `strip_label_declarations` removes leading declaration blocks, bare class
-   lists, and per-class headers (prefix-only stripping catches ~60–70%);
+   lists, and per-class headers (prefix-only stripping catches 72/29/45% on cora/citeseer/pubmed);
    `--keep-label-leak` preserves them for the A4 control.
 6. **Budget guard** — an unsatisfiable `--budget` now refuses loudly instead
    of silently capping at the public pool's 20/class.
@@ -157,6 +157,6 @@ precomputed views (`sbert`, `gpt3l`, `tape_full`, `tape_stripped`). Then
 | sentence encoder (A2) | Wang et al. (E5), 2022. arXiv:2212.03533 |
 | encoder A2′ | OpenAI text-embedding-3-large, Jan 2024 release note (no paper) |
 | HSIC | Gretton et al., ALT 2005 — *Measuring Statistical Dependence with Hilbert-Schmidt Norms* |
-| entropy-weighted fusion | Han et al., Findings of ACL 2026 — entropy-guided uncertainty fusion (mechanism precedent) |
+| entropy-weighted fusion | UNVERIFIED citation — entropy/uncertainty-weighted multi-view fusion has published precedents, but the specific reference has not been checked; verify before citing (reading issue FEW-29) |
 | when LLMs help (scope) | Wu et al. (LLMNodeBed), ICML 2025. arXiv:2502.00829 |
 | homophily descriptors (h_adj, LI) | Platonov et al., NeurIPS 2023. arXiv:2209.06177 |
