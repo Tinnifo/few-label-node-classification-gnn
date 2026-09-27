@@ -1,5 +1,8 @@
 # few-label-node-classification-gnn
 
+> **Project progress** — hypotheses, experiments and results in one page: [`PROGRESS.md`](PROGRESS.md) · reading list: [`papers/`](papers/README.md)
+
+
 Hydra-driven pipeline for few-label node classification with the `cg3` method
 (contrastive graph-to-graph multi-task) on homophilic Planetoid graphs, with
 scaffolding for Direction-2 (LLM semantic view + disparity/HSIC) and local
