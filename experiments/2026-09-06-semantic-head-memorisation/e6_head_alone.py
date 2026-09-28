@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""e6 — link c: the semantic MLP head alone, per dataset × encoder, 10 seeds, 400 full-batch steps.
+"""Exp 6 — the semantic classifier (MLP head) trained alone, per dataset × encoder, 10 seeds, 400 full-batch steps.
 
 Head = PrecomputedSemanticChannel's MLP + classifier: Linear(d,256)-ReLU-Linear(256,128)-Linear(128,C).
 Optimiser = Adam(lr=0.01, weight_decay=0.0) as in src/cg3_semantic.py:448; no dropout, no early stop.

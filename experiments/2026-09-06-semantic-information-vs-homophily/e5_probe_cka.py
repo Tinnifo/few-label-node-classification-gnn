@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""e5 — link a: graph-free linear probes + linear CKA across the homophily sweep.
+"""Exp 5 — graph-free linear probes + linear CKA across the homophily sweep.
 
 Mirrors scripts/probe_views.py (LogisticRegression C=1.0, max_iter=2000, 20/class from the
 non-test pool, 10 seeds). Adds Â²X (sym-normalised 2-hop propagation of X) as a parameter-free
