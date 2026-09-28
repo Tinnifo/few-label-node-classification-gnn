@@ -1,0 +1,2012 @@
+{
+ "cora/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 10.0,
+  "step_train_acc_1_iqr": [
+   9.25,
+   10.0
+  ],
+  "test_acc_final_mean": 0.6837999939918518,
+  "test_acc_at_early_stop_mean": 0.7214999914169311,
+  "early_stop_step_median": 6.5,
+  "entropy_plateau_mean": 1.2914943933486938,
+  "entropy_final_mean": 0.06796811930835248,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6890000104904175,
+    "test_acc_max": 0.7490000128746033,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.054717779159546,
+    "entropy_final": 0.06663017719984055,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7329999804496765
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.7099999785423279,
+    "test_acc_max": 0.7450000047683716,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.0882121324539185,
+    "entropy_final": 0.05475591868162155,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7250000238418579
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6660000085830688,
+    "test_acc_max": 0.7210000157356262,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.8435215950012207,
+    "entropy_final": 0.0667029470205307,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7139999866485596
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6510000228881836,
+    "test_acc_max": 0.7129999995231628,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.228272557258606,
+    "entropy_final": 0.08237132430076599,
+    "early_stop_step": 13,
+    "test_acc_at_early_stop": 0.6959999799728394
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6679999828338623,
+    "test_acc_max": 0.7170000076293945,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.5605225563049316,
+    "entropy_final": 0.07199138402938843,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7170000076293945
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.6669999957084656,
+    "test_acc_max": 0.7269999980926514,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.1025184392929077,
+    "entropy_final": 0.07468453794717789,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.7149999737739563
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.7269999980926514,
+    "test_acc_max": 0.7599999904632568,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.1792997121810913,
+    "entropy_final": 0.05354834720492363,
+    "early_stop_step": 12,
+    "test_acc_at_early_stop": 0.7509999871253967
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.7149999737739563,
+    "test_acc_max": 0.7450000047683716,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.1790392398834229,
+    "entropy_final": 0.06023947894573212,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.7369999885559082
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6629999876022339,
+    "test_acc_max": 0.7179999947547913,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.548940896987915,
+    "entropy_final": 0.06515617668628693,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7179999947547913
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6819999814033508,
+    "test_acc_max": 0.7239999771118164,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.129899024963379,
+    "entropy_final": 0.08360090106725693,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7089999914169312
+   }
+  ]
+ },
+ "cora/gpt3l": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 8.0,
+  "step_train_acc_1_iqr": [
+   7.25,
+   8.0
+  ],
+  "test_acc_final_mean": 0.7266000032424926,
+  "test_acc_at_early_stop_mean": 0.7749000072479248,
+  "early_stop_step_median": 6.5,
+  "entropy_plateau_mean": 1.2753369987010956,
+  "entropy_final_mean": 0.0569133710116148,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.6940000057220459,
+    "test_acc_max": 0.7730000019073486,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.2518634796142578,
+    "entropy_final": 0.06820763647556305,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7730000019073486
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.7409999966621399,
+    "test_acc_max": 0.777999997138977,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.1625230312347412,
+    "entropy_final": 0.04983102157711983,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7710000276565552
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7160000205039978,
+    "test_acc_max": 0.7689999938011169,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.6362979412078857,
+    "entropy_final": 0.05468548461794853,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.7620000243186951
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7179999947547913,
+    "test_acc_max": 0.777999997138977,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.1193903684616089,
+    "entropy_final": 0.04798298329114914,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7720000147819519
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.6990000009536743,
+    "test_acc_max": 0.777999997138977,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.6139861345291138,
+    "entropy_final": 0.05657726898789406,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.765999972820282
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.7070000171661377,
+    "test_acc_max": 0.7760000228881836,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.200964331626892,
+    "entropy_final": 0.062191907316446304,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.7760000228881836
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7910000085830688,
+    "test_acc_max": 0.8029999732971191,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.7789526581764221,
+    "entropy_final": 0.04741730913519859,
+    "early_stop_step": 13,
+    "test_acc_at_early_stop": 0.8009999990463257
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.75,
+    "test_acc_max": 0.7620000243186951,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.174487590789795,
+    "entropy_final": 0.05529685318470001,
+    "early_stop_step": 15,
+    "test_acc_at_early_stop": 0.7559999823570251
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.7450000047683716,
+    "test_acc_max": 0.7820000052452087,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.656732201576233,
+    "entropy_final": 0.07149408757686615,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.7820000052452087
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.7049999833106995,
+    "test_acc_max": 0.7900000214576721,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.1581722497940063,
+    "entropy_final": 0.05544915795326233,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.7900000214576721
+   }
+  ]
+ },
+ "citeseer/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 9.5,
+  "step_train_acc_1_iqr": [
+   9.0,
+   10.0
+  ],
+  "test_acc_final_mean": 0.6120420813560485,
+  "test_acc_at_early_stop_mean": 0.7089633703231811,
+  "early_stop_step_median": 4.0,
+  "entropy_plateau_mean": 1.6393482089042664,
+  "entropy_final_mean": 0.07448307499289512,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.597817599773407,
+    "test_acc_max": 0.7049883008003235,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.5436819791793823,
+    "entropy_final": 0.07475932687520981,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7049883008003235
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6301636695861816,
+    "test_acc_max": 0.7042089104652405,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7573903799057007,
+    "entropy_final": 0.07437299937009811,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7042089104652405
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6052221059799194,
+    "test_acc_max": 0.7104442715644836,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7655653953552246,
+    "entropy_final": 0.07914502918720245,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7084957361221313
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6184723377227783,
+    "test_acc_max": 0.7244738936424255,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7640615701675415,
+    "entropy_final": 0.07495100796222687,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7244738936424255
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.597817599773407,
+    "test_acc_max": 0.6956352591514587,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.189968228340149,
+    "entropy_final": 0.06790965050458908,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6866718530654907
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6212003231048584,
+    "test_acc_max": 0.7233047485351562,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7665454149246216,
+    "entropy_final": 0.07101314514875412,
+    "early_stop_step": 2,
+    "test_acc_at_early_stop": 0.7233047485351562
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6219797134399414,
+    "test_acc_max": 0.7088854312896729,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.6363306045532227,
+    "entropy_final": 0.07410679012537003,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7081059813499451
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6001558899879456,
+    "test_acc_max": 0.714341402053833,
+    "plateau_step": 1,
+    "entropy_at_plateau": 1.7894176244735718,
+    "entropy_final": 0.07760677486658096,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.714341402053833
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6235385537147522,
+    "test_acc_max": 0.7073265910148621,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.6115049123764038,
+    "entropy_final": 0.07127953320741653,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.694855809211731
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6040530204772949,
+    "test_acc_max": 0.7201870679855347,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.5690159797668457,
+    "entropy_final": 0.0796864926815033,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7201870679855347
+   }
+  ]
+ },
+ "citeseer/gpt3l": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 7.0,
+  "step_train_acc_1_iqr": [
+   7.0,
+   7.0
+  ],
+  "test_acc_final_mean": 0.6248246252536773,
+  "test_acc_at_early_stop_mean": 0.711496502161026,
+  "early_stop_step_median": 3.0,
+  "entropy_plateau_mean": 1.4976673007011414,
+  "entropy_final_mean": 0.0642880655825138,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.5892439484596252,
+    "test_acc_max": 0.714341402053833,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.3754401206970215,
+    "entropy_final": 0.07745363563299179,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.6936866641044617
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6165237426757812,
+    "test_acc_max": 0.7217459082603455,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.3447265625,
+    "entropy_final": 0.06676046550273895,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7217459082603455
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.6352299451828003,
+    "test_acc_max": 0.7131722569465637,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.6869252920150757,
+    "entropy_final": 0.0509130023419857,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.7131722569465637
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6379579305648804,
+    "test_acc_max": 0.7197973728179932,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.340056300163269,
+    "entropy_final": 0.06918961554765701,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.7197973728179932
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6305533647537231,
+    "test_acc_max": 0.7162899374961853,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.3075212240219116,
+    "entropy_final": 0.06296233832836151,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.7104442715644836
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6360093355178833,
+    "test_acc_max": 0.7049883008003235,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7223403453826904,
+    "entropy_final": 0.06289319694042206,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.7014809250831604
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6250974535942078,
+    "test_acc_max": 0.7182385325431824,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.439306378364563,
+    "entropy_final": 0.07073316723108292,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7182385325431824
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.6317225098609924,
+    "test_acc_max": 0.6995323300361633,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.3242144584655762,
+    "entropy_final": 0.04369879141449928,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.6995323300361633
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.6098986864089966,
+    "test_acc_max": 0.7127825617790222,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7291576862335205,
+    "entropy_final": 0.07685301452875137,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.7127825617790222
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6360093355178833,
+    "test_acc_max": 0.724084198474884,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.7069846391677856,
+    "entropy_final": 0.06142342835664749,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.724084198474884
+   }
+  ]
+ },
+ "pubmed/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 5.5,
+  "step_train_acc_1_iqr": [
+   5.0,
+   6.75
+  ],
+  "test_acc_final_mean": 0.7474000036716462,
+  "test_acc_at_early_stop_mean": 0.7630999982357025,
+  "early_stop_step_median": 7.0,
+  "entropy_plateau_mean": 0.7855107307434082,
+  "entropy_final_mean": 0.027604895830154418,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.6980000138282776,
+    "test_acc_max": 0.7400000095367432,
+    "plateau_step": 4,
+    "entropy_at_plateau": 0.5967960357666016,
+    "entropy_final": 0.036166299134492874,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7400000095367432
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.7480000257492065,
+    "test_acc_max": 0.7559999823570251,
+    "plateau_step": 4,
+    "entropy_at_plateau": 0.5391896963119507,
+    "entropy_final": 0.02673831768333912,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7360000014305115
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.7689999938011169,
+    "test_acc_max": 0.7730000019073486,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.3196306824684143,
+    "entropy_final": 0.01924924924969673,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.7720000147819519
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.753000020980835,
+    "test_acc_max": 0.7689999938011169,
+    "plateau_step": 3,
+    "entropy_at_plateau": 0.8241384029388428,
+    "entropy_final": 0.020907007157802582,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7689999938011169
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7599999904632568,
+    "test_acc_max": 0.765999972820282,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.031699538230896,
+    "entropy_final": 0.02243739739060402,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.7649999856948853
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.7540000081062317,
+    "test_acc_max": 0.7639999985694885,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.0250805616378784,
+    "entropy_final": 0.03525897115468979,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.75
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.7599999904632568,
+    "test_acc_max": 0.7829999923706055,
+    "plateau_step": 4,
+    "entropy_at_plateau": 0.595911979675293,
+    "entropy_final": 0.02717796340584755,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7829999923706055
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.7559999823570251,
+    "test_acc_max": 0.7749999761581421,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.045547366142273,
+    "entropy_final": 0.02090245857834816,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7749999761581421
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.7590000033378601,
+    "test_acc_max": 0.7689999938011169,
+    "plateau_step": 3,
+    "entropy_at_plateau": 0.8463569283485413,
+    "entropy_final": 0.028670093044638634,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.7509999871253967
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.7170000076293945,
+    "test_acc_max": 0.7900000214576721,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.0307561159133911,
+    "entropy_final": 0.03854120150208473,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.7900000214576721
+   }
+  ]
+ },
+ "pubmed/gpt3l": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 5.0,
+  "step_train_acc_1_iqr": [
+   5.0,
+   6.0
+  ],
+  "test_acc_final_mean": 0.7917999982833862,
+  "test_acc_at_early_stop_mean": 0.8469000041484833,
+  "early_stop_step_median": 6.0,
+  "entropy_plateau_mean": 0.5415138214826584,
+  "entropy_final_mean": 0.02972919587045908,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.7519999742507935,
+    "test_acc_max": 0.8360000252723694,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.33757179975509644,
+    "entropy_final": 0.0349263921380043,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8360000252723694
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.7369999885559082,
+    "test_acc_max": 0.8190000057220459,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.2958778738975525,
+    "entropy_final": 0.035269398242235184,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8190000057220459
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 4,
+    "test_acc_final": 0.7710000276565552,
+    "test_acc_max": 0.843999981880188,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.22722791135311127,
+    "entropy_final": 0.02523680031299591,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.843999981880188
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 6,
+    "test_acc_final": 0.8429999947547913,
+    "test_acc_max": 0.8619999885559082,
+    "plateau_step": 2,
+    "entropy_at_plateau": 0.935606062412262,
+    "entropy_final": 0.029355086386203766,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8600000143051147
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.8600000143051147,
+    "test_acc_max": 0.8650000095367432,
+    "plateau_step": 4,
+    "entropy_at_plateau": 0.4079281985759735,
+    "entropy_final": 0.021667875349521637,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.8650000095367432
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.7730000019073486,
+    "test_acc_max": 0.8370000123977661,
+    "plateau_step": 2,
+    "entropy_at_plateau": 0.9770879149436951,
+    "entropy_final": 0.02297264151275158,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.8370000123977661
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.7919999957084656,
+    "test_acc_max": 0.8529999852180481,
+    "plateau_step": 2,
+    "entropy_at_plateau": 0.9589889049530029,
+    "entropy_final": 0.038758285343647,
+    "early_stop_step": 2,
+    "test_acc_at_early_stop": 0.8529999852180481
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 5,
+    "test_acc_final": 0.800000011920929,
+    "test_acc_max": 0.8600000143051147,
+    "plateau_step": 3,
+    "entropy_at_plateau": 0.6273787021636963,
+    "entropy_final": 0.02512684278190136,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8600000143051147
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.8019999861717224,
+    "test_acc_max": 0.8510000109672546,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.18796373903751373,
+    "entropy_final": 0.0364820659160614,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8399999737739563
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 4,
+    "test_acc_final": 0.7879999876022339,
+    "test_acc_max": 0.8550000190734863,
+    "plateau_step": 4,
+    "entropy_at_plateau": 0.4595071077346802,
+    "entropy_final": 0.027496570721268654,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.8550000190734863
+   }
+  ]
+ },
+ "texas/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 12.0,
+  "step_train_acc_1_iqr": [
+   11.0,
+   13.5
+  ],
+  "test_acc_final_mean": 0.6336734592914581,
+  "test_acc_at_early_stop_mean": 0.6306122422218323,
+  "early_stop_step_median": 4.0,
+  "entropy_plateau_mean": 0.562514927983284,
+  "entropy_final_mean": 0.12949955612421035,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6530612111091614,
+    "test_acc_max": 0.6836734414100647,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.8274974226951599,
+    "entropy_final": 0.09128863364458084,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6326530575752258
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.6836734414100647,
+    "test_acc_max": 0.704081654548645,
+    "plateau_step": 10,
+    "entropy_at_plateau": 0.442200243473053,
+    "entropy_final": 0.15067607164382935,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6428571343421936
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.6224489808082581,
+    "test_acc_max": 0.6530612111091614,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.9257408976554871,
+    "entropy_final": 0.16530591249465942,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.581632673740387
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.6224489808082581,
+    "test_acc_max": 0.6836734414100647,
+    "plateau_step": 11,
+    "entropy_at_plateau": 0.4383046627044678,
+    "entropy_final": 0.13137976825237274,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.6734693646430969
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.6428571343421936,
+    "test_acc_max": 0.704081654548645,
+    "plateau_step": 12,
+    "entropy_at_plateau": 0.36139896512031555,
+    "entropy_final": 0.11586825549602509,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.6122449040412903
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.6530612111091614,
+    "test_acc_max": 0.7244898080825806,
+    "plateau_step": 13,
+    "entropy_at_plateau": 0.31184911727905273,
+    "entropy_final": 0.12511569261550903,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6326530575752258
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.6530612111091614,
+    "test_acc_max": 0.7142857313156128,
+    "plateau_step": 13,
+    "entropy_at_plateau": 0.3419504761695862,
+    "entropy_final": 0.11211882531642914,
+    "early_stop_step": 12,
+    "test_acc_at_early_stop": 0.6632652878761292
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.6428571343421936,
+    "test_acc_max": 0.7142857313156128,
+    "plateau_step": 13,
+    "entropy_at_plateau": 0.3679887354373932,
+    "entropy_final": 0.10016616433858871,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6326530575752258
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.5510203838348389,
+    "test_acc_max": 0.6530612111091614,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.226940393447876,
+    "entropy_final": 0.1628267765045166,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6224489808082581
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.6122449040412903,
+    "test_acc_max": 0.704081654548645,
+    "plateau_step": 12,
+    "entropy_at_plateau": 0.3812783658504486,
+    "entropy_final": 0.14024946093559265,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.6122449040412903
+   }
+  ]
+ },
+ "texas/gpt3l": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 9.0,
+  "step_train_acc_1_iqr": [
+   8.0,
+   10.75
+  ],
+  "test_acc_final_mean": 0.8316326558589935,
+  "test_acc_at_early_stop_mean": 0.8775510191917419,
+  "early_stop_step_median": 9.0,
+  "entropy_plateau_mean": 0.6871334671974182,
+  "entropy_final_mean": 0.05276126880198717,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.8469387888908386,
+    "test_acc_max": 0.8673469424247742,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.5237427949905396,
+    "entropy_final": 0.09232151508331299,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.8673469424247742
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.8265306353569031,
+    "test_acc_max": 0.8877550959587097,
+    "plateau_step": 9,
+    "entropy_at_plateau": 0.5238847732543945,
+    "entropy_final": 0.028684446588158607,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.8877550959587097
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.8673469424247742,
+    "test_acc_max": 0.8877550959587097,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.7203644514083862,
+    "entropy_final": 0.04253173992037773,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8877550959587097
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.8571428656578064,
+    "test_acc_max": 0.8877550959587097,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.8564602732658386,
+    "entropy_final": 0.07826095819473267,
+    "early_stop_step": 14,
+    "test_acc_at_early_stop": 0.8367347121238708
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.7857142686843872,
+    "test_acc_max": 0.8979591727256775,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.860650360584259,
+    "entropy_final": 0.08742848038673401,
+    "early_stop_step": 14,
+    "test_acc_at_early_stop": 0.8673469424247742
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.8163265585899353,
+    "test_acc_max": 0.8979591727256775,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.7895691394805908,
+    "entropy_final": 0.06160270795226097,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8979591727256775
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.8061224222183228,
+    "test_acc_max": 0.9081632494926453,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.5415844321250916,
+    "entropy_final": 0.03540521115064621,
+    "early_stop_step": 12,
+    "test_acc_at_early_stop": 0.9081632494926453
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.8061224222183228,
+    "test_acc_max": 0.918367326259613,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.7019254565238953,
+    "entropy_final": 0.019237618893384933,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8673469424247742
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.8367347121238708,
+    "test_acc_max": 0.8877550959587097,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.7010531425476074,
+    "entropy_final": 0.05006716772913933,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8877550959587097
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.8673469424247742,
+    "test_acc_max": 0.8775510191917419,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.6520998477935791,
+    "entropy_final": 0.03207284212112427,
+    "early_stop_step": 20,
+    "test_acc_at_early_stop": 0.8673469424247742
+   }
+  ]
+ },
+ "cornell/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 8.0,
+  "step_train_acc_1_iqr": [
+   8.0,
+   8.75
+  ],
+  "test_acc_final_mean": 0.5777777791023254,
+  "test_acc_at_early_stop_mean": 0.6010101139545441,
+  "early_stop_step_median": 5.0,
+  "entropy_plateau_mean": 1.2807561933994294,
+  "entropy_final_mean": 0.08216940052807331,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.5757575631141663,
+    "test_acc_max": 0.6262626051902771,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.3388727903366089,
+    "entropy_final": 0.11782457679510117,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.5858585834503174
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.5858585834503174,
+    "test_acc_max": 0.6363636255264282,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.324701189994812,
+    "entropy_final": 0.05832499638199806,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.6060606241226196
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.5858585834503174,
+    "test_acc_max": 0.6161616444587708,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.272714376449585,
+    "entropy_final": 0.0630161389708519,
+    "early_stop_step": 3,
+    "test_acc_at_early_stop": 0.5959596037864685
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.5959596037864685,
+    "test_acc_max": 0.6262626051902771,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.32462739944458,
+    "entropy_final": 0.07931419461965561,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6060606241226196
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.5555555820465088,
+    "test_acc_max": 0.6464646458625793,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.3039345741271973,
+    "entropy_final": 0.08160123229026794,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.6060606241226196
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.5353535413742065,
+    "test_acc_max": 0.6262626051902771,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.343166470527649,
+    "entropy_final": 0.07832327485084534,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.5959596037864685
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.5959596037864685,
+    "test_acc_max": 0.6060606241226196,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.279375672340393,
+    "entropy_final": 0.06389171630144119,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.6060606241226196
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.5858585834503174,
+    "test_acc_max": 0.6262626051902771,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.3955104351043701,
+    "entropy_final": 0.09196987748146057,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.6060606241226196
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.5858585834503174,
+    "test_acc_max": 0.6262626051902771,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.280346155166626,
+    "entropy_final": 0.1099252700805664,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6060606241226196
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.5757575631141663,
+    "test_acc_max": 0.6363636255264282,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.9443128705024719,
+    "entropy_final": 0.07750272750854492,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.5959596037864685
+   }
+  ]
+ },
+ "cornell/gpt3l": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 7.0,
+  "step_train_acc_1_iqr": [
+   7.0,
+   8.0
+  ],
+  "test_acc_final_mean": 0.8101010143756866,
+  "test_acc_at_early_stop_mean": 0.8333333373069763,
+  "early_stop_step_median": 7.5,
+  "entropy_plateau_mean": 0.5162711322307587,
+  "entropy_final_mean": 0.0475238174200058,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.8383838534355164,
+    "test_acc_max": 0.8787878751754761,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.5007176399230957,
+    "entropy_final": 0.040661249309778214,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8484848737716675
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.7878788113594055,
+    "test_acc_max": 0.8484848737716675,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.5369992256164551,
+    "entropy_final": 0.06518014520406723,
+    "early_stop_step": 14,
+    "test_acc_at_early_stop": 0.8282828330993652
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.7979797720909119,
+    "test_acc_max": 0.8585858345031738,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.6122871041297913,
+    "entropy_final": 0.048733245581388474,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8282828330993652
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7979797720909119,
+    "test_acc_max": 0.8484848737716675,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.48340868949890137,
+    "entropy_final": 0.05977330729365349,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8484848737716675
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.8484848737716675,
+    "test_acc_max": 0.868686854839325,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.46724069118499756,
+    "entropy_final": 0.060305316001176834,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8585858345031738
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.8282828330993652,
+    "test_acc_max": 0.8484848737716675,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.6084678769111633,
+    "entropy_final": 0.03370329737663269,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.8181818127632141
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7979797720909119,
+    "test_acc_max": 0.8484848737716675,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.5215106010437012,
+    "entropy_final": 0.04957705736160278,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.808080792427063
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7777777910232544,
+    "test_acc_max": 0.8383838534355164,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.5086377859115601,
+    "entropy_final": 0.03378496691584587,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.8383838534355164
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.8484848737716675,
+    "test_acc_max": 0.8787878751754761,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.5095075964927673,
+    "entropy_final": 0.03058644011616707,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8383838534355164
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.7777777910232544,
+    "test_acc_max": 0.8585858345031738,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.4139341115951538,
+    "entropy_final": 0.05293314903974533,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8181818127632141
+   }
+  ]
+ },
+ "washington/sbert": {
+  "n_seeds_reaching_train_1": 0,
+  "step_train_acc_1_median": null,
+  "step_train_acc_1_iqr": null,
+  "test_acc_final_mean": 0.6714285910129547,
+  "test_acc_at_early_stop_mean": 0.7000000178813934,
+  "early_stop_step_median": 6.0,
+  "entropy_plateau_mean": 0.9404575943946838,
+  "entropy_final_mean": 0.11869045421481132,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.6554622054100037,
+    "test_acc_max": 0.7310924530029297,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.8592823147773743,
+    "entropy_final": 0.15597081184387207,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6890756487846375
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.6386554837226868,
+    "test_acc_max": 0.7058823704719543,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.0644465684890747,
+    "entropy_final": 0.1330111175775528,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6890756487846375
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.680672287940979,
+    "test_acc_max": 0.7226890921592712,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9747313261032104,
+    "entropy_final": 0.13490639626979828,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7226890921592712
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.6638655662536621,
+    "test_acc_max": 0.7226890921592712,
+    "plateau_step": 3,
+    "entropy_at_plateau": 0.9960765838623047,
+    "entropy_final": 0.10873456299304962,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.7142857313156128
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.680672287940979,
+    "test_acc_max": 0.7058823704719543,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.0327914953231812,
+    "entropy_final": 0.09975186735391617,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.6974790096282959
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.6890756487846375,
+    "test_acc_max": 0.7058823704719543,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.0619961023330688,
+    "entropy_final": 0.08343895524740219,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.6890756487846375
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.6638655662536621,
+    "test_acc_max": 0.7142857313156128,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9740529656410217,
+    "entropy_final": 0.10412014275789261,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6638655662536621
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.680672287940979,
+    "test_acc_max": 0.7226890921592712,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.8424608111381531,
+    "entropy_final": 0.09098182618618011,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7142857313156128
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.7058823704719543,
+    "test_acc_max": 0.7058823704719543,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.06679105758667,
+    "entropy_final": 0.12245555222034454,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.6890756487846375
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.6554622054100037,
+    "test_acc_max": 0.7394958138465881,
+    "plateau_step": 9,
+    "entropy_at_plateau": 0.5319467186927795,
+    "entropy_final": 0.15353330969810486,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7310924530029297
+   }
+  ]
+ },
+ "washington/gpt3l": {
+  "n_seeds_reaching_train_1": 0,
+  "step_train_acc_1_median": null,
+  "step_train_acc_1_iqr": null,
+  "test_acc_final_mean": 0.7957983314990997,
+  "test_acc_at_early_stop_mean": 0.837815135717392,
+  "early_stop_step_median": 8.5,
+  "entropy_plateau_mean": 0.8325721859931946,
+  "entropy_final_mean": 0.08432385623455048,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.8151260614395142,
+    "test_acc_max": 0.8571428656578064,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.750964879989624,
+    "entropy_final": 0.07482236623764038,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8571428656578064
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.7731092572212219,
+    "test_acc_max": 0.8571428656578064,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.1284295320510864,
+    "entropy_final": 0.09492899477481842,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8571428656578064
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.831932783126831,
+    "test_acc_max": 0.8403361439704895,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.7680547833442688,
+    "entropy_final": 0.04273272305727005,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.831932783126831
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.8151260614395142,
+    "test_acc_max": 0.8571428656578064,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.7394237518310547,
+    "entropy_final": 0.059459663927555084,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.8151260614395142
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.756302535533905,
+    "test_acc_max": 0.848739504814148,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.1172746419906616,
+    "entropy_final": 0.09475794434547424,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8403361439704895
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.7983193397521973,
+    "test_acc_max": 0.8403361439704895,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.0183650255203247,
+    "entropy_final": 0.1001635193824768,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.831932783126831
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.756302535533905,
+    "test_acc_max": 0.8403361439704895,
+    "plateau_step": 9,
+    "entropy_at_plateau": 0.6737857460975647,
+    "entropy_final": 0.1193142756819725,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.8403361439704895
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.8235294222831726,
+    "test_acc_max": 0.848739504814148,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.7221289873123169,
+    "entropy_final": 0.06963209062814713,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.831932783126831
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.8067227005958557,
+    "test_acc_max": 0.8655462265014648,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.8290756344795227,
+    "entropy_final": 0.12173603475093842,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.8655462265014648
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.7815126180648804,
+    "test_acc_max": 0.8655462265014648,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.5782188773155212,
+    "entropy_final": 0.06569094955921173,
+    "early_stop_step": 187,
+    "test_acc_at_early_stop": 0.8067227005958557
+   }
+  ]
+ },
+ "wisconsin/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 9.0,
+  "step_train_acc_1_iqr": [
+   9.0,
+   10.0
+  ],
+  "test_acc_final_mean": 0.6430656969547272,
+  "test_acc_at_early_stop_mean": 0.6934306561946869,
+  "early_stop_step_median": 9.0,
+  "entropy_plateau_mean": 0.9270539462566376,
+  "entropy_final_mean": 0.10110546126961709,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6642335653305054,
+    "test_acc_max": 0.7226277589797974,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.7286244630813599,
+    "entropy_final": 0.09384394437074661,
+    "early_stop_step": 12,
+    "test_acc_at_early_stop": 0.7080292105674744
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.5912408828735352,
+    "test_acc_max": 0.7007299065589905,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9622510671615601,
+    "entropy_final": 0.13176332414150238,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.7007299065589905
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.5620437860488892,
+    "test_acc_max": 0.7080292105674744,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9356129169464111,
+    "entropy_final": 0.1251371055841446,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.6934306621551514
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.7007299065589905,
+    "test_acc_max": 0.7007299065589905,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9445173740386963,
+    "entropy_final": 0.11314629763364792,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.6715328693389893
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6934306621551514,
+    "test_acc_max": 0.7518247961997986,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9931547045707703,
+    "entropy_final": 0.06916378438472748,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7299270033836365
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6204379796981812,
+    "test_acc_max": 0.6934306621551514,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.923791229724884,
+    "entropy_final": 0.07837750762701035,
+    "early_stop_step": 15,
+    "test_acc_at_early_stop": 0.6788321137428284
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6058394312858582,
+    "test_acc_max": 0.6788321137428284,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.0135794878005981,
+    "entropy_final": 0.12900757789611816,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.6715328693389893
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.6569343209266663,
+    "test_acc_max": 0.7080292105674744,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9956074953079224,
+    "entropy_final": 0.09316904097795486,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.6861313581466675
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.7153284549713135,
+    "test_acc_max": 0.7299270033836365,
+    "plateau_step": 5,
+    "entropy_at_plateau": 0.9156869053840637,
+    "entropy_final": 0.08550696074962616,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.7080292105674744
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.6204379796981812,
+    "test_acc_max": 0.7226277589797974,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.8577138185501099,
+    "entropy_final": 0.09193906933069229,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.6861313581466675
+   }
+  ]
+ },
+ "wisconsin/gpt3l": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 10.5,
+  "step_train_acc_1_iqr": [
+   9.25,
+   11.0
+  ],
+  "test_acc_final_mean": 0.8467153251171112,
+  "test_acc_at_early_stop_mean": 0.8766423344612122,
+  "early_stop_step_median": 9.5,
+  "entropy_plateau_mean": 0.6486422687768936,
+  "entropy_final_mean": 0.06752190813422203,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.8540145754814148,
+    "test_acc_max": 0.8905109763145447,
+    "plateau_step": 9,
+    "entropy_at_plateau": 0.561552882194519,
+    "entropy_final": 0.05779947340488434,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.8905109763145447
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.8321167826652527,
+    "test_acc_max": 0.8905109763145447,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.418383926153183,
+    "entropy_final": 0.07440534979104996,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.8321167826652527
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 8,
+    "test_acc_final": 0.8467153310775757,
+    "test_acc_max": 0.9051094651222229,
+    "plateau_step": 7,
+    "entropy_at_plateau": 0.7635884881019592,
+    "entropy_final": 0.07647959142923355,
+    "early_stop_step": 13,
+    "test_acc_at_early_stop": 0.8832116723060608
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.8686131238937378,
+    "test_acc_max": 0.9124087691307068,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.6229067444801331,
+    "entropy_final": 0.06485273689031601,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.8978102207183838
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.8394160866737366,
+    "test_acc_max": 0.8905109763145447,
+    "plateau_step": 4,
+    "entropy_at_plateau": 1.0772209167480469,
+    "entropy_final": 0.06471548974514008,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.8832116723060608
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.8613138794898987,
+    "test_acc_max": 0.8978102207183838,
+    "plateau_step": 10,
+    "entropy_at_plateau": 0.5426186919212341,
+    "entropy_final": 0.10329721122980118,
+    "early_stop_step": 13,
+    "test_acc_at_early_stop": 0.8613138794898987
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.8248175382614136,
+    "test_acc_max": 0.8978102207183838,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.5698198080062866,
+    "entropy_final": 0.08399583399295807,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.8832116723060608
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 7,
+    "test_acc_final": 0.8321167826652527,
+    "test_acc_max": 0.8759124279022217,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.5738247036933899,
+    "entropy_final": 0.05905894190073013,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8686131238937378
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 10,
+    "test_acc_final": 0.8540145754814148,
+    "test_acc_max": 0.9124087691307068,
+    "plateau_step": 6,
+    "entropy_at_plateau": 0.7554795145988464,
+    "entropy_final": 0.040967702865600586,
+    "early_stop_step": 6,
+    "test_acc_at_early_stop": 0.8686131238937378
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.8540145754814148,
+    "test_acc_max": 0.8978102207183838,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.6010270118713379,
+    "entropy_final": 0.04964675009250641,
+    "early_stop_step": 10,
+    "test_acc_at_early_stop": 0.8978102207183838
+   }
+  ]
+ },
+ "amazon_ratings/sbert": {
+  "n_seeds_reaching_train_1": 9,
+  "step_train_acc_1_median": 13.0,
+  "step_train_acc_1_iqr": [
+   12.0,
+   16.0
+  ],
+  "test_acc_final_mean": 0.22660408169031143,
+  "test_acc_at_early_stop_mean": 0.3073387712240219,
+  "early_stop_step_median": 6.0,
+  "entropy_plateau_mean": 1.4593736410140992,
+  "entropy_final_mean": 0.23097897171974183,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 16,
+    "test_acc_final": 0.22497959434986115,
+    "test_acc_max": 0.36759182810783386,
+    "plateau_step": 1,
+    "entropy_at_plateau": 1.602837324142456,
+    "entropy_final": 0.22134968638420105,
+    "early_stop_step": 1,
+    "test_acc_at_early_stop": 0.36759182810783386
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": null,
+    "test_acc_final": 0.2160816341638565,
+    "test_acc_max": 0.3302040696144104,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.378462314605713,
+    "entropy_final": 0.2841278314590454,
+    "early_stop_step": 5,
+    "test_acc_at_early_stop": 0.3302040696144104
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 9,
+    "test_acc_final": 0.23020407557487488,
+    "test_acc_max": 0.2668571472167969,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.5924572944641113,
+    "entropy_final": 0.17389428615570068,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.2668571472167969
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 11,
+    "test_acc_final": 0.2297142893075943,
+    "test_acc_max": 0.3629387617111206,
+    "plateau_step": 1,
+    "entropy_at_plateau": 1.6065309047698975,
+    "entropy_final": 0.230220764875412,
+    "early_stop_step": 1,
+    "test_acc_at_early_stop": 0.3629387617111206
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 13,
+    "test_acc_final": 0.23297959566116333,
+    "test_acc_max": 0.2682448923587799,
+    "plateau_step": 5,
+    "entropy_at_plateau": 1.2945886850357056,
+    "entropy_final": 0.25418561697006226,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.2682448923587799
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 13,
+    "test_acc_final": 0.21077550947666168,
+    "test_acc_max": 0.2949387729167938,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.6062790155410767,
+    "entropy_final": 0.2336435168981552,
+    "early_stop_step": 2,
+    "test_acc_at_early_stop": 0.2949387729167938
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 16,
+    "test_acc_final": 0.2315102070569992,
+    "test_acc_max": 0.26530611515045166,
+    "plateau_step": 8,
+    "entropy_at_plateau": 1.1452112197875977,
+    "entropy_final": 0.2398362159729004,
+    "early_stop_step": 16,
+    "test_acc_at_early_stop": 0.26530611515045166
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 12,
+    "test_acc_final": 0.22057142853736877,
+    "test_acc_max": 0.2813877463340759,
+    "plateau_step": 1,
+    "entropy_at_plateau": 1.6064397096633911,
+    "entropy_final": 0.16980867087841034,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.27542856335639954
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 16,
+    "test_acc_final": 0.2280000001192093,
+    "test_acc_max": 0.30236735939979553,
+    "plateau_step": 7,
+    "entropy_at_plateau": 1.1592456102371216,
+    "entropy_final": 0.2780863642692566,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.30236735939979553
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 13,
+    "test_acc_final": 0.2412244826555252,
+    "test_acc_max": 0.3395102024078369,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.601684331893921,
+    "entropy_final": 0.2246367633342743,
+    "early_stop_step": 2,
+    "test_acc_at_early_stop": 0.3395102024078369
+   }
+  ]
+ },
+ "actor/sbert": {
+  "n_seeds_reaching_train_1": 10,
+  "step_train_acc_1_median": 14.5,
+  "step_train_acc_1_iqr": [
+   14.0,
+   15.75
+  ],
+  "test_acc_final_mean": 0.43621157109737396,
+  "test_acc_at_early_stop_mean": 0.5672242343425751,
+  "early_stop_step_median": 8.5,
+  "entropy_plateau_mean": 1.2502438724040985,
+  "entropy_final_mean": 0.17249952852725983,
+  "seeds_entropy_falls_after_plateau": 10,
+  "per_seed": [
+   {
+    "seed": 0,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.3928571343421936,
+    "test_acc_max": 0.5226039886474609,
+    "plateau_step": 7,
+    "entropy_at_plateau": 1.1319113969802856,
+    "entropy_final": 0.1749977320432663,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.5226039886474609
+   },
+   {
+    "seed": 1,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.4489150047302246,
+    "test_acc_max": 0.6103073954582214,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.4612683057785034,
+    "entropy_final": 0.15524043142795563,
+    "early_stop_step": 4,
+    "test_acc_at_early_stop": 0.6103073954582214
+   },
+   {
+    "seed": 2,
+    "step_train_acc_1": 15,
+    "test_acc_final": 0.3553345501422882,
+    "test_acc_max": 0.5262206196784973,
+    "plateau_step": 6,
+    "entropy_at_plateau": 1.3929829597473145,
+    "entropy_final": 0.20800042152404785,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.5153707265853882
+   },
+   {
+    "seed": 3,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.4489150047302246,
+    "test_acc_max": 0.5750452280044556,
+    "plateau_step": 8,
+    "entropy_at_plateau": 0.930142343044281,
+    "entropy_final": 0.1628728061914444,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.5750452280044556
+   },
+   {
+    "seed": 4,
+    "step_train_acc_1": 14,
+    "test_acc_final": 0.43083181977272034,
+    "test_acc_max": 0.5515370965003967,
+    "plateau_step": 7,
+    "entropy_at_plateau": 1.2579219341278076,
+    "entropy_final": 0.17840658128261566,
+    "early_stop_step": 7,
+    "test_acc_at_early_stop": 0.5515370965003967
+   },
+   {
+    "seed": 5,
+    "step_train_acc_1": 15,
+    "test_acc_final": 0.4805605709552765,
+    "test_acc_max": 0.5691681504249573,
+    "plateau_step": 2,
+    "entropy_at_plateau": 1.4389824867248535,
+    "entropy_final": 0.1435568779706955,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.5628390312194824
+   },
+   {
+    "seed": 6,
+    "step_train_acc_1": 17,
+    "test_acc_final": 0.4091320037841797,
+    "test_acc_max": 0.5583182573318481,
+    "plateau_step": 8,
+    "entropy_at_plateau": 1.0100574493408203,
+    "entropy_final": 0.20314835011959076,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.5583182573318481
+   },
+   {
+    "seed": 7,
+    "step_train_acc_1": 16,
+    "test_acc_final": 0.5063291192054749,
+    "test_acc_max": 0.6333634853363037,
+    "plateau_step": 8,
+    "entropy_at_plateau": 1.0609214305877686,
+    "entropy_final": 0.15487395226955414,
+    "early_stop_step": 8,
+    "test_acc_at_early_stop": 0.6333634853363037
+   },
+   {
+    "seed": 8,
+    "step_train_acc_1": 19,
+    "test_acc_final": 0.4538878798484802,
+    "test_acc_max": 0.5858951210975647,
+    "plateau_step": 6,
+    "entropy_at_plateau": 1.3335965871810913,
+    "entropy_final": 0.16623808443546295,
+    "early_stop_step": 9,
+    "test_acc_at_early_stop": 0.5858951210975647
+   },
+   {
+    "seed": 9,
+    "step_train_acc_1": 13,
+    "test_acc_final": 0.435352623462677,
+    "test_acc_max": 0.5867992639541626,
+    "plateau_step": 3,
+    "entropy_at_plateau": 1.4846538305282593,
+    "entropy_final": 0.1776600480079651,
+    "early_stop_step": 11,
+    "test_acc_at_early_stop": 0.5569620132446289
+   }
+  ]
+ }
+}

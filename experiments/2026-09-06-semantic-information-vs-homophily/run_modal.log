@@ -1,0 +1,31 @@
+cora n=2708 h_adj=+0.771 {'features': 0.573, 'prop2': 0.804, 'sbert': 0.747, 'gpt3l': 0.777} 1s
+citeseer n=3186 h_adj=+0.680 {'features': 0.647, 'prop2': 0.71, 'sbert': 0.702, 'gpt3l': 0.71} 2s
+pubmed n=19717 h_adj=+0.686 {'features': 0.682, 'prop2': 0.728, 'sbert': 0.75, 'gpt3l': 0.833} 2s
+texas n=187 h_adj=-0.290 {'features': 0.418, 'prop2': 0.503, 'sbert': 0.644, 'gpt3l': 0.789} 0s
+cornell n=191 h_adj=-0.225 {'features': 0.548, 'prop2': 0.521, 'sbert': 0.64, 'gpt3l': 0.789} 0s
+washington n=229 h_adj=-0.194 {'features': 0.613, 'prop2': 0.629, 'sbert': 0.729, 'gpt3l': 0.813} 0s
+wisconsin n=265 h_adj=-0.169 {'features': 0.41, 'prop2': 0.425, 'sbert': 0.716, 'gpt3l': 0.858} 1s
+amazon_ratings n=24492 h_adj=+0.140 {'features': 0.203, 'prop2': 0.214, 'sbert': 0.23} 1s
+actor n=4416 h_adj=+0.334 {'features': 0.387, 'prop2': 0.344, 'sbert': 0.511} 2s
+{
+ "sbert~features": {
+  "rho": 0.7999999999999999,
+  "p": 0.009627924725379839,
+  "n": 9
+ },
+ "sbert~prop2": {
+  "rho": 0.7833333333333333,
+  "p": 0.012519873019449885,
+  "n": 9
+ },
+ "gpt3l~features": {
+  "rho": 0.7500000000000002,
+  "p": 0.0521814004570578,
+  "n": 7
+ },
+ "gpt3l~prop2": {
+  "rho": 0.7500000000000002,
+  "p": 0.0521814004570578,
+  "n": 7
+ }
+}

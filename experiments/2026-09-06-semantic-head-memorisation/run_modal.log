@@ -1,0 +1,16 @@
+cora sbert train1@10.0 test_final=0.684 test@ES=0.721 ent 1.29->0.07 (10/10) 35s
+cora gpt3l train1@8.0 test_final=0.727 test@ES=0.775 ent 1.28->0.06 (10/10) 115s
+citeseer sbert train1@9.5 test_final=0.612 test@ES=0.709 ent 1.64->0.07 (10/10) 37s
+citeseer gpt3l train1@7.0 test_final=0.625 test@ES=0.711 ent 1.50->0.06 (10/10) 133s
+pubmed sbert train1@5.5 test_final=0.747 test@ES=0.763 ent 0.79->0.03 (10/10) 192s
+pubmed gpt3l train1@5.0 test_final=0.792 test@ES=0.847 ent 0.54->0.03 (10/10) 808s
+texas sbert train1@12.0 test_final=0.634 test@ES=0.631 ent 0.56->0.13 (10/10) 8s
+texas gpt3l train1@9.0 test_final=0.832 test@ES=0.878 ent 0.69->0.05 (10/10) 17s
+cornell sbert train1@8.0 test_final=0.578 test@ES=0.601 ent 1.28->0.08 (10/10) 8s
+cornell gpt3l train1@7.0 test_final=0.810 test@ES=0.833 ent 0.52->0.05 (10/10) 17s
+washington sbert train1@None test_final=0.671 test@ES=0.700 ent 0.94->0.12 (10/10) 8s
+washington gpt3l train1@None test_final=0.796 test@ES=0.838 ent 0.83->0.08 (10/10) 18s
+wisconsin sbert train1@9.0 test_final=0.643 test@ES=0.693 ent 0.93->0.10 (10/10) 9s
+wisconsin gpt3l train1@10.5 test_final=0.847 test@ES=0.877 ent 0.65->0.07 (10/10) 19s
+amazon_ratings sbert train1@13.0 test_final=0.227 test@ES=0.307 ent 1.46->0.23 (10/10) 246s
+actor sbert train1@14.5 test_final=0.436 test@ES=0.567 ent 1.25->0.17 (10/10) 46s
