@@ -169,3 +169,16 @@ mlflow.db-*
 .DS_Store
 .wiki
 CLAUDE.local.md
+
+# marimo
+__marimo__/
+.marimo/
+
+# Outputs
+models/
+results/
+*.out
+*.err
+
+# ruff
+.ruff_cache/

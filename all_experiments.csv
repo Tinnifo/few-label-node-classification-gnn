@@ -1,3 +1,0 @@
-model,method,dataset,loss,budget,mean_acc,std_acc,mean_macro_f1,std_macro_f1,l_ce,l_gen,l_con,l_reg,l_total,rt_sec_mean,best_epoch_mean,rt_sec_std,epochs,patience,lr,weight_decay,use_early_stopping,seeds
-gcn_hgcn,cg3,Cora,structural,20,0.319,0.0,0.0691,0.0,1.9892,1.1493,0.0444,,3.9904,2.444,1,0.0,3,9999,0.01,0.0005,False,[0]
-gcn_hgcn,cg3,Cora,structural,20,0.7738,0.0265,0.77,0.0172,1.5157,0.6958,-1.1122,,1.5311,36.5506,46,1.7764,50,9999,0.01,0.0005,False,"[0, 1, 2, 3, 4]"
