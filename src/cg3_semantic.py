@@ -18,6 +18,7 @@ Usage:
 from __future__ import annotations
 
 import argparse
+import csv
 import logging
 import os
 import sys
@@ -293,6 +294,16 @@ def run_seed(args, data, hierarchy: Hierarchy, tags, seed: int, device: torch.de
         val_acc = (pred[inputs.val_mask] == inputs.y[inputs.val_mask]).float().mean().item()
         val_loss = F.cross_entropy(outputs[inputs.val_mask], inputs.y[inputs.val_mask]).item()
         epoch_log.append({"epoch": epoch, **terms, "val_acc": val_acc, "val_loss": val_loss})
+        log.info(
+            "seed=%d epoch=%d HSIC=%.6f route=%s "
+            "train_acc=%.4f val_acc=%.4f",
+            seed,
+            epoch,
+            terms["loss_hsic"],
+            "concat" if terms["fused_by_concat"] else "entropy_attention",
+            terms["train_acc"],
+            val_acc,
+        )
 
         if val_acc > best_val:
             best_val, best_epoch, best_state = val_acc, epoch, trainable_state(model)
@@ -303,11 +314,22 @@ def run_seed(args, data, hierarchy: Hierarchy, tags, seed: int, device: torch.de
                 break
 
     model.load_state_dict(best_state, strict=False)
-    pred, _ = predict(model, inputs, tags)
-    metrics = compute_metrics(inputs.y[inputs.test_mask].cpu().numpy(), pred[inputs.test_mask].cpu().numpy())
+
+    pred, outputs = predict(model, inputs, tags)
+
+    node_diagnostics = collect_node_diagnostics(
+        model, inputs, seed, outputs
+    )
+
+    metrics = compute_metrics(
+        inputs.y[inputs.test_mask].cpu().numpy(),
+        pred[inputs.test_mask].cpu().numpy(),
+    )
+
     return {
         "metrics": metrics,
         "epoch_log": epoch_log,
+        "node_diagnostics": node_diagnostics,
         "best_val_acc": best_val,
         "best_epoch": best_epoch,
         "stopped_at": epoch,
@@ -315,6 +337,80 @@ def run_seed(args, data, hierarchy: Hierarchy, tags, seed: int, device: torch.de
         "state": best_state,
     }
 
+@torch.no_grad()
+def collect_node_diagnostics(model, inputs, seed, outputs):
+    """Collect per-node confidence, entropy, attention and correctness
+    from the selected best checkpoint."""
+
+    # Uses model.state from the predict() call in run_seed().
+    state = model.state
+
+    def prediction_stats(logits):
+        probs = F.softmax(logits, dim=-1)
+        confidence, predicted_class = probs.max(dim=-1)
+        entropy = -(probs * probs.clamp_min(1e-12).log()).sum(dim=-1)
+        return confidence, entropy, predicted_class
+
+    struct_conf, struct_ent, struct_pred = prediction_stats(
+        state["logits_structural"]
+    )
+    sem_conf, sem_ent, sem_pred = prediction_stats(
+        state["logits_semantic"]
+    )
+    final_conf, final_ent, final_pred = prediction_stats(outputs)
+
+    n = inputs.features.size(0)
+    labels = inputs.y
+    hsic_value = float(state["hsic"].item())
+    route = "concat" if state["fused_by_concat"] else "entropy_attention"
+    
+    # NaN means attention weights were not used by the actual fusion route.
+    if state["alpha_structural"] is not None:
+        struct_alpha = state["alpha_structural"].squeeze(-1)
+        sem_alpha = state["alpha_semantic"].squeeze(-1)
+    else:
+        struct_alpha = torch.full_like(struct_conf, float("nan"))
+        sem_alpha = torch.full_like(sem_conf, float("nan"))
+
+    split_masks = {
+        "train": inputs.train_mask,
+        "val": inputs.val_mask,
+        "test": inputs.test_mask,
+    }
+
+    rows = []
+    
+    for split, mask in split_masks.items():
+        node_ids = torch.where(mask)[0].tolist()
+
+        for i in node_ids:
+            y = int(labels[i].item())
+            rows.append({
+                "seed": seed,
+                "node_id": i,
+                "split": split,
+                "true_label": y,
+                "hsic": hsic_value,
+                "fusion_route": route,
+                "struct_confidence": float(struct_conf[i].item()),
+                "struct_entropy": float(struct_ent[i].item()),
+                "struct_pred": int(struct_pred[i].item()),
+                "struct_correct": int(struct_pred[i].item() == y),
+                "semantic_confidence": float(sem_conf[i].item()),
+                "semantic_entropy": float(sem_ent[i].item()),
+                "semantic_pred": int(sem_pred[i].item()),
+                "semantic_correct": int(sem_pred[i].item() == y),
+                "struct_attention": float(struct_alpha[i].item()),
+                "semantic_attention": float(sem_alpha[i].item()),
+                "final_confidence": float(final_conf[i].item()),
+                "final_entropy": float(final_ent[i].item()),
+                "final_pred": int(final_pred[i].item()),
+                "final_correct": int(final_pred[i].item() == y),
+            })
+
+    
+    
+    return rows
 
 # ---------------------------------------------------------------------------
 # MLflow
@@ -401,6 +497,11 @@ def parse_args() -> argparse.Namespace:
     g.add_argument("--no-mlflow", action="store_true")
     g.add_argument("--mlflow-uri", default="sqlite:///mlflow.db")
     g.add_argument("--mlflow-experiment", default="few-label-gnn")
+    g.add_argument(
+        "--diagnostics-dir",
+        default="diagnostics",
+        help="directory for per-node and per-epoch diagnostic CSV files",
+    )
     return p.parse_args()
 
 
@@ -430,6 +531,49 @@ def main(args: argparse.Namespace) -> float:
     try:
         for seed in seeds:
             result = run_seed(args, data, hierarchy, tags, seed, device)
+            
+            diagnostic_dir = Path(args.diagnostics_dir)
+            diagnostic_dir.mkdir(parents=True, exist_ok=True)
+
+            # Per-node diagnostics from the best checkpoint.
+            node_rows = result["node_diagnostics"]
+            if node_rows:
+                node_path = diagnostic_dir / f"node_diagnostics_seed{seed}.csv"
+                with node_path.open("w", newline="", encoding="utf-8") as f:
+                    writer = csv.DictWriter(f, fieldnames=node_rows[0].keys())
+                    writer.writeheader()
+                    writer.writerows(node_rows)
+                log.info("Saved node diagnostics: %s", node_path)
+
+            # HSIC and other metrics for every training epoch.
+            epoch_rows = result["epoch_log"]
+            if epoch_rows:
+                epoch_path = diagnostic_dir / f"epoch_diagnostics_seed{seed}.csv"
+                with epoch_path.open("w", newline="", encoding="utf-8") as f:
+                    writer = csv.DictWriter(f, fieldnames=epoch_rows[0].keys())
+                    writer.writeheader()
+                    writer.writerows(epoch_rows)
+                log.info("Saved epoch diagnostics: %s", epoch_path)
+
+            # Print confidence and correctness summaries for each view.
+            for split in ("train", "val", "test"):
+                rows = [r for r in node_rows if r["split"] == split]
+                if not rows:
+                    continue
+
+                log.info(
+                    "seed=%d split=%s nodes=%d "
+                    "struct_correct=%d struct_conf_mean=%.4f "
+                    "semantic_correct=%d semantic_conf_mean=%.4f "
+                    "final_correct=%d final_conf_mean=%.4f",
+                    seed, split, len(rows),
+                    sum(r["struct_correct"] for r in rows),
+                    np.mean([r["struct_confidence"] for r in rows]),
+                    sum(r["semantic_correct"] for r in rows),
+                    np.mean([r["semantic_confidence"] for r in rows]),
+                    sum(r["final_correct"] for r in rows),
+                    np.mean([r["final_confidence"] for r in rows]),
+                )
             m = result["metrics"]
             accs.append(m["accuracy"])
             f1s.append(m["macro_f1"])
