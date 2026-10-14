@@ -62,7 +62,7 @@ import torch.nn.functional as F
 
 from torch_geometric.data import Data, download_url
 from torch_geometric.datasets import Actor, HeterophilousGraphDataset, WebKB
-
+from src.tag_loader import load_text_attributed  # noqa: E402
 
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))  # repo root, so this file runs as a script
@@ -959,7 +959,7 @@ def parse_args() -> argparse.Namespace:
 
     g.add_argument("--texts", default=None, help="raw node texts for the semantic view: one line per node, PyG order")
 
-
+    g.add_argument("--tag-csv", default=None, help="text-attributed CSV (Graph-COM Texas.csv); replaces --dataset/--texts")
 
     g = p.add_argument_group("label budget")
 
@@ -1075,9 +1075,11 @@ def main(args: argparse.Namespace) -> float:
 
 
 
-    data = load_dataset(args.dataset, args.data_root)
-
-    tags = load_texts(args.texts, data.num_nodes) if args.texts else None
+    if args.tag_csv:
+        data, tags = load_text_attributed(args.tag_csv)
+    else:
+        data = load_dataset(args.dataset, args.data_root)
+        tags = load_texts(args.texts, data.num_nodes) if args.texts else None
 
     if args.semantic and tags is None:
 
