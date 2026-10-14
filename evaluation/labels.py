@@ -2,6 +2,10 @@
 
 Both strategies sample from the dataset's standard training pool only, so the
 fixed validation and test splits stay untouched and no node leaks across.
+
+WebKB (Texas, Cornell, Wisconsin) and Actor ship 10 Geom-GCN splits as
+[num_nodes, 10] boolean masks. `select_split` keeps one column so every mask
+is 1D before the label strategy runs.
 """
 
 from __future__ import annotations
@@ -19,6 +23,19 @@ def set_seed(seed: int) -> None:
     torch.cuda.manual_seed_all(seed)
     torch.backends.cudnn.deterministic = True
     torch.backends.cudnn.benchmark = False
+
+
+def select_split(data, split_idx: int):
+    """Turn [N, S] train/val/test masks into [N] masks by keeping one column.
+
+    Masks that are already 1D are left alone. `split_idx` wraps around, so
+    seed 12 with 10 splits uses split 2.
+    """
+    for key in ("train_mask", "val_mask", "test_mask"):
+        mask = getattr(data, key, None)
+        if mask is not None and mask.dim() == 2:
+            setattr(data, key, mask[:, split_idx % mask.size(1)].clone())
+    return data
 
 
 def set_few_label_mask(data, num_labels_per_class: int, seed: int):
@@ -51,8 +68,13 @@ def set_budget_percent(data, fraction: float, seed: int):
     return data
 
 
-def apply_label_strategy(data, strategy: str, budget, seed: int):
-    """Build the training mask. `strategy` is `per_class` or `percentage`."""
+def apply_label_strategy(data, strategy: str, budget, seed: int, split_idx: int | None = None):
+    """Build the training mask. `strategy` is `per_class` or `percentage`.
+
+    `split_idx` picks which of the dataset's fixed splits to use; it defaults
+    to `seed`, so each seed gets its own split.
+    """
+    data = select_split(data, seed if split_idx is None else split_idx)
     if strategy == "per_class":
         return set_few_label_mask(data, int(budget), seed)
     if strategy == "percentage":
