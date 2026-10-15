@@ -1,5 +1,0 @@
-# Structural contrastive + λ * disparity regularizer (disparity stub = 0).
-name: structural_plus_disparity
-temperature: 0.5
-hp1: 0.9
-lambda_reg: 1.0

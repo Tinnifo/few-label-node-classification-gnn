@@ -1,98 +1,68 @@
-# few-label-node-classification-gnn
+# CG3 + a Semantic View for Few-Label Node Classification
 
-Hydra-driven pipeline for few-label node classification with the `cg3` method
-(contrastive graph-to-graph multi-task) on homophilic Planetoid graphs, with
-scaffolding for Direction-2 (LLM semantic view + disparity/HSIC) and local
-MLflow tracking. Metrics: accuracy and macro F1.
+### Overview
+Node classification when only a handful of labels per class are available. The model is **CG3** (Wan et al., AAAI 2021) — a local GCN/GAT view and a global hierarchical H-GCN/H-GAT view, trained with a contrastive loss between the views and a generative edge loss — plus a **semantic view** built from each node's text (LLM descriptor → sentence embedding → MLP). **HSIC** between the structural and semantic embeddings gates how the two are fused: nearly independent views are concatenated and classified jointly; dependent views are classified separately and their logits mixed by **entropy attention**, which weights the more confident view higher.
 
-See [PLAN.md](PLAN.md) for the Direction-2 experiment design.
+### Installation
+1. Clone this repository:
+```
+git clone https://github.com/Tinnifo/few-label-node-classification-gnn.git
+cd few-label-node-classification-gnn
+```
+2. Install dependencies (Python ≥ 3.12):
+```
+pip install -r requirements.txt
+```
+or, with uv, `uv sync`.
 
-## 1. Setup
+### Datasets
+Cora, CiteSeer and PubMed come from PyTorch Geometric's `Planetoid` loader with the standard public split. They download into `data/` on the first run — nothing to fetch by hand.
 
-Managed with [uv](https://docs.astral.sh/uv/). The interpreter is pinned in `.python-version` (3.12) and dependencies are locked in `uv.lock`.
+The semantic view needs each node's raw text, which Planetoid does not ship (its features are bag-of-words). Provide it with `--texts FILE`: one line per node, in PyG node order.
 
-```bash
-uv sync                 # creates .venv from uv.lock (incl. notebook deps)
-uv sync --no-dev        # training only — skips matplotlib/igraph/networkx
+### Usage
+Every option, with its default:
+```
+python src/cg3_semantic.py --help
+```
+CG3 on Cora with 20 labels per class, five seeds:
+```
+python src/cg3_semantic.py --dataset cora --budget 20 --seeds 0,1,2,3,4 --early-stopping
+```
+A 5 % label budget on PubMed:
+```
+python src/cg3_semantic.py --dataset pubmed --label-strategy percentage --budget 0.05
+```
+With the semantic view:
+```
+python src/cg3_semantic.py --dataset cora --semantic --texts data/cora_texts.txt
+```
+Runs log to a local MLflow store (`sqlite:///mlflow.db`, experiment `few-label-gnn`); browse it with `mlflow ui --backend-store-uri sqlite:///mlflow.db`, or pass `--no-mlflow`. `--output DIR` saves the best checkpoint of every seed. On SLURM, edit the parameters at the top of `sh/run_cg3_semantic.sh` and `sbatch` it.
+
+### Repository layout
+```
+src/cg3_semantic.py    the model and its training script — start here
+src/layers.py          GCN / GAT / MLP layers (local view), H-GCN / H-GAT layers (global view)
+src/hgcn.py            H-GCN / H-GAT: the global view over the coarsened hierarchy
+src/coarsening.py      MILE hybrid matching that builds the hierarchy
+src/preprocess.py      PyG Data -> CG3 inputs: features, support, hierarchy, label matrices
+src/losses.py          structural contrastive loss, HSIC, masked cross-entropy / accuracy
+src/semantic.py        the semantic view: descriptor LLM + sentence encoder + MLP
+evaluation/labels.py   few-label splits: `per_class` (k labels per class) or `percentage`
+evaluation/metrics.py  accuracy and macro-F1
+sh/                    SLURM launchers
 ```
 
-Run anything with `uv run <cmd>`. Before the first dataset load:
-
-```bash
-export TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD=1
+### Citation
+The structural model is CG3; if you use this code, please cite:
 ```
-
-## 2. How experiments are configured
-
-Hydra composes one experiment from config groups under `conf/`:
-
-| Group | Files | Purpose |
-|---|---|---|
-| `model/` | `gcn`, `cg3` | Backbone label (`cg3` is a placeholder; CG3 builds its own model) |
-| `method/` | `cg3`, `cg3_semantic`, `llm_concat`, `knn_llm`, `feature_fusion` | Training recipe (`cg3` works; others are stubs) |
-| `loss/` | `structural`, `disparity`, `hsic`, `structural_plus_*` | Pluggable view loss (structural = original CG3) |
-| `dataset/` | `cora`, `citeseer`, `pubmed`, `roman_empire`, `amazon_ratings` | Homo Planetoid + hetero placeholders |
-| `label_strategy/` | `per_class`, `percentage` | How the labeled set is sampled |
-| `metrics/` | `default` | accuracy + macro F1 |
-
-## 3. Running
-
-```bash
-# Baseline CG3
-uv run python src/train.py method=cg3 loss=structural dataset=cora label_strategy.budget=20
-
-# Swap loss without touching CG3 source
-uv run python src/train.py method=cg3 loss=structural_plus_hsic dataset=cora
-
-# Bundled experiment recipe
-uv run python src/train.py --multirun +experiment=cg3_combinations
-```
-
-### MLflow (local)
-
-Tracking is on by default (`mlflow.enable=true`, SQLite store at `mlflow.db`).
-
-```bash
-uv run mlflow ui --backend-store-uri sqlite:///mlflow.db
-```
-
-Toggle off with `mlflow.enable=false`. TensorBoard remains available via `tensorboard.enable`.
-
-### Where results go
-
-- Master CSV: `master_csv` knob (default `all_experiments.csv`)
-- Per-config CSVs + TB events under `runs/<dataset>/budget_<X>/<model>_<method>/`
-- MLflow: `mlflow.db` (+ artifacts under `mlartifacts/` if created)
-
-## 4. Adding a loss / method / dataset
-
-**New loss**: implement `BaseViewLoss` in `src/losses/`, register in `build_loss`, add `conf/loss/foo.yaml`. Use with `loss=foo`.
-
-**New method**: subclass `BaseMethod`, add to `METHOD_REGISTRY` in `src/train.py`, write `conf/method/foo.yaml`.
-
-**New dataset**: add `conf/dataset/foo.yaml` with `kind` (`planetoid` | `placeholder` | future kinds) and wire the loader in `src/data/loader.py`.
-
-## 5. Project structure
-
-```
-PLAN.md                   # Direction-2 experiment plan
-conf/                     # Hydra config groups
-src/
-├── train.py              # Hydra entry + MLflow / TensorBoard logging
-├── losses/               # Pluggable structural / disparity / HSIC losses
-├── eval/                 # accuracy + macro F1
-├── tracking/             # local MLflow helper
-├── models/               # BaseGNN + GCN
-├── methods/
-│   ├── cg3.py            # working baseline
-│   ├── cg3_semantic.py   # Direction-2 stub
-│   ├── llm_concat.py / knn_llm.py / feature_fusion.py  # case-study stubs
-│   └── _cg3/             # CG3 architecture
-└── data/
-```
-
-## 6. TensorBoard
-
-```bash
-uv run tensorboard --logdir runs
+@inproceedings{wan2021contrastive,
+  title={Contrastive and Generative Graph Convolutional Networks for Graph-based Semi-Supervised Learning},
+  author={Wan, Sheng and Pan, Shirui and Yang, Jian and Gong, Chen},
+  booktitle={Proceedings of the AAAI Conference on Artificial Intelligence},
+  volume={35},
+  number={11},
+  pages={10049--10057},
+  year={2021}
+}
 ```
